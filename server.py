@@ -32,7 +32,11 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 HEYGEN_API_KEY = os.environ.get("HEYGEN_API_KEY", "")
 WOOPSOCIAL_API_KEY = os.environ.get("WOOPSOCIAL_API_KEY", "")
 
-UPLOADS_DIR = Path(__file__).parent / "uploads"
+# On Vercel the filesystem is read-only — use /tmp for uploads
+if os.environ.get("VERCEL") or not DATABASE_URL.startswith("sqlite"):
+    UPLOADS_DIR = Path("/tmp/scc_uploads")
+else:
+    UPLOADS_DIR = Path(__file__).parent / "uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)
 
 logging.basicConfig(level=logging.INFO)
@@ -1059,9 +1063,7 @@ async def webhook_woopsocial(body: dict):
 
 # ─── File serving ─────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).parent
-_UPLOADS = BASE_DIR / "uploads"
-_UPLOADS.mkdir(exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=str(_UPLOADS)), name="uploads")
+app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 
 @app.get("/")
