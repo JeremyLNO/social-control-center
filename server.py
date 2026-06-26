@@ -43,13 +43,16 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("scc")
 
 # ─── DB ─────────────────────────────────────────────────────────────────────
-connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-
-if not DATABASE_URL.startswith("sqlite"):
-    from sqlalchemy.pool import NullPool
-    engine = create_engine(DATABASE_URL, poolclass=NullPool, connect_args=connect_args)
-else:
+if DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
     engine = create_engine(DATABASE_URL, connect_args=connect_args)
+else:
+    from sqlalchemy.pool import NullPool
+    # Neon / Postgres: force SSL, no connection pool (serverless)
+    _db_url = DATABASE_URL
+    if "sslmode" not in _db_url:
+        _db_url += ("&" if "?" in _db_url else "?") + "sslmode=require"
+    engine = create_engine(_db_url, poolclass=NullPool)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -214,14 +217,19 @@ def _seed_superadmin():
 
 
 # ─── FastAPI app ─────────────────────────────────────────────────────────────
-app = FastAPI(title="Social Control Center")
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app):
+    try:
+        _create_tables()
+        _seed_superadmin()
+    except Exception as e:
+        log.error("Startup error (non-fatal): %s", e)
+    yield
+
+app = FastAPI(title="Social Control Center", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-
-
-@app.on_event("startup")
-def _startup():
-    _create_tables()
-    _seed_superadmin()
 
 
 def get_db():
