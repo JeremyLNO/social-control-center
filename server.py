@@ -32,7 +32,7 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 HEYGEN_API_KEY = os.environ.get("HEYGEN_API_KEY", "")
 WOOPSOCIAL_API_KEY = os.environ.get("WOOPSOCIAL_API_KEY", "")
 
-UPLOADS_DIR = Path("uploads")
+UPLOADS_DIR = Path(__file__).parent / "uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)
 
 logging.basicConfig(level=logging.INFO)
@@ -628,6 +628,16 @@ def update_content(content_id: int, body: dict, db: Session = Depends(get_db), _
     return _content_dict(c)
 
 
+@app.delete("/api/contents/{content_id}")
+def delete_content(content_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
+    c = db.query(Content).get(content_id)
+    if not c:
+        raise HTTPException(404)
+    db.delete(c)
+    db.commit()
+    return {"ok": True}
+
+
 # ─── Publications ─────────────────────────────────────────────────────────────
 def _pub_dict(p: Publication):
     return {
@@ -924,7 +934,66 @@ def analytics_costs(db: Session = Depends(get_db), _=Depends(get_current_user)):
         by_agent[r.agent]["cost_eur"] += r.cost_eur
         by_agent[r.agent]["tokens"] += r.tokens_in + r.tokens_out
         by_agent[r.agent]["runs"] += 1
-    return {"by_agent": by_agent, "total_eur": round(sum(v["cost_eur"] for v in by_agent.values()), 4)}
+    # Daily trend: last 14 days
+    daily: dict = {}
+    for r in runs:
+        day = r.created_at.strftime("%Y-%m-%d") if r.created_at else "?"
+        daily.setdefault(day, 0)
+        daily[day] += r.cost_eur
+    # Fill last 14 days with 0 if missing
+    today = datetime.now(timezone.utc).date()
+    trend = []
+    for i in range(13, -1, -1):
+        d = (today - timedelta(days=i)).isoformat()
+        trend.append({"date": d, "cost_eur": round(daily.get(d, 0), 6)})
+    return {
+        "by_agent": by_agent,
+        "total_eur": round(sum(v["cost_eur"] for v in by_agent.values()), 4),
+        "trend": trend,
+    }
+
+
+@app.post("/api/digest")
+def generate_digest(db: Session = Depends(get_db), _=Depends(get_current_user)):
+    """Daily digest — résumé de l'activité du jour via Claude."""
+    today = datetime.now(timezone.utc).date()
+    since = datetime.combine(today, datetime.min.time()).replace(tzinfo=timezone.utc)
+
+    runs_today   = db.query(AgentRun).filter(AgentRun.created_at >= since).all()
+    scripts_ok   = db.query(Script).filter(Script.created_at >= since, Script.state == "approved").count()
+    contents_ok  = db.query(Content).filter(Content.created_at >= since, Content.state == "ready").count()
+    pubs_today   = db.query(Publication).filter(Publication.scheduled_at >= since).count()
+    cost_today   = round(sum(r.cost_eur for r in runs_today), 4)
+    tokens_today = sum(r.tokens_in + r.tokens_out for r in runs_today)
+
+    summary_ctx = (
+        f"Date: {today.isoformat()}\n"
+        f"Pipelines exécutés aujourd'hui: {len(runs_today)}\n"
+        f"Scripts approuvés: {scripts_ok}\n"
+        f"Contenus prêts: {contents_ok}\n"
+        f"Publications planifiées: {pubs_today}\n"
+        f"Coût Claude aujourd'hui: {cost_today} €\n"
+        f"Tokens consommés: {tokens_today}\n"
+    )
+
+    if not ANTHROPIC_API_KEY:
+        return {"digest": f"[Résumé du {today.isoformat()} — API non configurée]\n\n{summary_ctx}"}
+
+    try:
+        import anthropic as ant
+        client = ant.Anthropic(api_key=ANTHROPIC_API_KEY)
+        resp = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=512,
+            system="Tu es le MANAGER du Social Control Center. Rédige un résumé de la journée en 3-4 phrases percutantes, style reporting exécutif, en français. Mentionne les chiffres clés et donne un conseil pour le lendemain.",
+            messages=[{"role": "user", "content": f"Voici les statistiques du jour :\n\n{summary_ctx}"}],
+        )
+        return {"digest": resp.content[0].text if resp.content else "Pas de réponse", "stats": {
+            "runs": len(runs_today), "scripts": scripts_ok, "contents": contents_ok,
+            "publications": pubs_today, "cost_eur": cost_today, "tokens": tokens_today,
+        }}
+    except Exception as e:
+        return {"digest": f"Erreur: {e}", "stats": {}}
 
 
 # ─── Settings ────────────────────────────────────────────────────────────────
@@ -989,14 +1058,17 @@ async def webhook_woopsocial(body: dict):
 
 
 # ─── File serving ─────────────────────────────────────────────────────────────
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+BASE_DIR = Path(__file__).parent
+_UPLOADS = BASE_DIR / "uploads"
+_UPLOADS.mkdir(exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(_UPLOADS)), name="uploads")
 
 
 @app.get("/")
 def serve_frontend():
-    return FileResponse("index.html")
+    return FileResponse(str(BASE_DIR / "index.html"))
 
 
 @app.get("/{path:path}")
 def catch_all(path: str):
-    return FileResponse("index.html")
+    return FileResponse(str(BASE_DIR / "index.html"))

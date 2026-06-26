@@ -531,8 +531,8 @@ tr:hover td{background:var(--bg3)}
     <div class="auth-title">Social Control Center</div>
     <div class="auth-sub">by <a href="mailto:jeremy@lno.company">Jeremy KB</a></div>
     <div class="auth-tabs">
-      <div class="auth-tab active" onclick="switchAuthTab('login')">Connexion</div>
-      <div class="auth-tab" onclick="switchAuthTab('register')">Créer un compte</div>
+      <div class="auth-tab active" data-tab="login" onclick="switchAuthTab('login')">Connexion</div>
+      <div class="auth-tab" data-tab="register" onclick="switchAuthTab('register')">Créer un compte</div>
     </div>
     <div id="authError" class="auth-error"></div>
 
@@ -1001,8 +1001,8 @@ tr:hover td{background:var(--bg3)}
         <div class="page-sub">Vidéos et visuels générés par le Monteur</div>
 
         <div class="tabs">
-          <div class="tab-btn active" onclick="switchContenuTab('planifier', this)">À planifier</div>
-          <div class="tab-btn" onclick="switchContenuTab('publies', this)">Publiés</div>
+          <div class="tab-btn active" data-tab="planifier" onclick="switchContenuTab('planifier', this)">À planifier</div>
+          <div class="tab-btn" data-tab="publies" onclick="switchContenuTab('publies', this)">Publiés</div>
         </div>
 
         <div class="tab-panel active" id="tabPlanifier">
@@ -1071,114 +1071,67 @@ tr:hover td{background:var(--bg3)}
       ═══════════════════════════════ -->
       <div class="page" id="pageAnalytics">
         <div class="page-title">Analytics</div>
-        <div class="page-sub">Performance et coûts du pipeline</div>
+        <div class="page-sub">Performance et coûts du pipeline IA</div>
 
         <!-- KPI row -->
         <div class="kpi-grid" style="margin-bottom:20px">
           <div class="kpi-card">
-            <div class="kpi-label">Total vues</div>
-            <div class="kpi-value" id="aKpiViews">0</div>
-            <div class="kpi-delta">Toutes plateformes</div>
+            <div class="kpi-label">Scripts créés</div>
+            <div class="kpi-value" id="aKpiScripts">—</div>
+            <div class="kpi-delta" id="aKpiScriptsSub">Total</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">Taux engagement</div>
-            <div class="kpi-value" id="aKpiEng">0%</div>
-            <div class="kpi-delta">Moyenne</div>
+            <div class="kpi-label">Contenus générés</div>
+            <div class="kpi-value" id="aKpiContents">—</div>
+            <div class="kpi-delta" id="aKpiContentsSub">Total</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">Coût total IA</div>
-            <div class="kpi-value" id="aKpiCostTotal">$0.00</div>
-            <div class="kpi-delta">Depuis le début</div>
+            <div class="kpi-label">Coût Claude</div>
+            <div class="kpi-value" id="aKpiCost">—</div>
+            <div class="kpi-delta">Depuis le début (€)</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">Runs pipeline</div>
-            <div class="kpi-value" id="aKpiRuns">0</div>
-            <div class="kpi-delta">Exécutions</div>
+            <div class="kpi-label">Tokens consommés</div>
+            <div class="kpi-value" id="aKpiTokens">—</div>
+            <div class="kpi-delta">Total in+out</div>
           </div>
         </div>
 
-        <div class="analytics-grid">
-          <!-- Views by platform -->
-          <div class="chart-card">
-            <div class="chart-title">Vues par plateforme</div>
-            <div class="bar-group" id="viewsByPlatform">
-              <div class="bar-row">
-                <div class="bar-label">🎵 TikTok</div>
-                <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
-                <div class="bar-val">0</div>
-              </div>
-              <div class="bar-row">
-                <div class="bar-label">🎬 IG Reels</div>
-                <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
-                <div class="bar-val">0</div>
-              </div>
-              <div class="bar-row">
-                <div class="bar-label">📸 Instagram</div>
-                <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
-                <div class="bar-val">0</div>
-              </div>
-              <div class="bar-row">
-                <div class="bar-label">👥 Facebook</div>
-                <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
-                <div class="bar-val">0</div>
-              </div>
-              <div class="bar-row">
-                <div class="bar-label">📺 YouTube</div>
-                <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
-                <div class="bar-val">0</div>
-              </div>
-              <div class="bar-row">
-                <div class="bar-label">📌 Pinterest</div>
-                <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
-                <div class="bar-val">0</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Cost per agent -->
+        <div class="analytics-grid" style="margin-bottom:20px">
+          <!-- Cost per agent (dynamic) -->
           <div class="chart-card">
             <div class="chart-title">Coût par agent</div>
             <div class="bar-group" id="costByAgent">
-              <div class="bar-row">
-                <div class="bar-label">Manager</div>
-                <div class="bar-track"><div class="bar-fill" style="width:0%;background:linear-gradient(90deg,#6366F1,#818CF8)"></div></div>
-                <div class="bar-val">$0.00</div>
-              </div>
-              <div class="bar-row">
-                <div class="bar-label">Marketing</div>
-                <div class="bar-track"><div class="bar-fill" style="width:0%;background:linear-gradient(90deg,#F97316,#FB923C)"></div></div>
-                <div class="bar-val">$0.00</div>
-              </div>
-              <div class="bar-row">
-                <div class="bar-label">Scripter</div>
-                <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
-                <div class="bar-val">$0.00</div>
-              </div>
-              <div class="bar-row">
-                <div class="bar-label">Design</div>
-                <div class="bar-track"><div class="bar-fill" style="width:0%;background:linear-gradient(90deg,var(--cta2),#C084FC)"></div></div>
-                <div class="bar-val">$0.00</div>
-              </div>
-              <div class="bar-row">
-                <div class="bar-label">Contrôle</div>
-                <div class="bar-track"><div class="bar-fill" style="width:0%;background:linear-gradient(90deg,var(--ok),#4ADE80)"></div></div>
-                <div class="bar-val">$0.00</div>
-              </div>
-              <div class="bar-row">
-                <div class="bar-label">Monteur</div>
-                <div class="bar-track"><div class="bar-fill" style="width:0%;background:linear-gradient(90deg,var(--warn),#FCD34D)"></div></div>
-                <div class="bar-val">$0.00</div>
-              </div>
-              <div class="bar-row">
-                <div class="bar-label">Planner</div>
-                <div class="bar-track"><div class="bar-fill" style="width:0%;background:linear-gradient(90deg,var(--err),#FB7185)"></div></div>
-                <div class="bar-val">$0.00</div>
-              </div>
+              <div style="color:var(--text3);font-size:13px;text-align:center;padding:20px 0">Aucune donnée</div>
             </div>
+          </div>
+
+          <!-- Cost trend 14 days -->
+          <div class="chart-card">
+            <div class="chart-title">Tendance 14 jours (€)</div>
+            <div id="costTrend" style="display:flex;align-items:flex-end;gap:4px;height:80px;padding-top:10px">
+              <div style="color:var(--text3);font-size:13px;width:100%;text-align:center">Aucune donnée</div>
+            </div>
+            <div id="costTrendLabels" style="display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--text3)"></div>
           </div>
         </div>
 
-        <!-- Agent runs viewer -->
+        <!-- Daily digest -->
+        <div class="chart-card" style="margin-bottom:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div class="chart-title" style="margin:0">🤖 Résumé du jour — Zeus (Manager)</div>
+            <button class="btn btn-primary btn-sm" onclick="generateDigest()" id="digestBtn">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l12 6-12 6V4z"/></svg>
+              Générer
+            </button>
+          </div>
+          <div id="digestOutput" style="font-size:14px;color:var(--text2);line-height:1.7;min-height:48px;white-space:pre-wrap">
+            <span style="color:var(--text3)">Cliquez « Générer » pour obtenir le bilan de la journée par le Manager Zeus.</span>
+          </div>
+          <div id="digestStats" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:10px"></div>
+        </div>
+
+        <!-- Agent runs history -->
         <div class="section-title">Historique des runs</div>
         <div id="agentRunList" class="agent-run-list">
           <div class="empty-state">
@@ -1430,10 +1383,110 @@ tr:hover td{background:var(--bg3)}
 <!-- ══════════════════════════════════════════════
      MODAL: PIPELINE RUN
 ══════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════
+     MODAL: SCHEDULE CONTENT
+══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="scheduleModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>📅 Planifier la publication</h2>
+      <button class="modal-close" onclick="closeModal('scheduleModal')">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l12 12M16 4L4 16"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="schedContentId">
+      <div class="form-group">
+        <label class="form-label">Plateforme</label>
+        <select id="schedPlatform" class="form-select">
+          <option value="tiktok">🎵 TikTok</option>
+          <option value="ig_reels">🎬 IG Reels</option>
+          <option value="instagram">📸 Instagram</option>
+          <option value="facebook">👥 Facebook</option>
+          <option value="youtube">📺 YouTube</option>
+          <option value="pinterest">📌 Pinterest</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" id="schedDate" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Heure</label>
+          <input type="time" id="schedTime" class="form-input" value="09:00">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('scheduleModal')">Annuler</button>
+      <button class="btn btn-primary" onclick="submitSchedule()">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12l4 4 8-8"/></svg>
+        Confirmer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MODAL: NEW PIPELINE (input form)
+══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="newPipelineModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🚀 Nouveau pipeline</h2>
+      <button class="modal-close" onclick="closeModal('newPipelineModal')">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l12 12M16 4L4 16"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Idée / Brief</label>
+        <textarea id="pipelineIdea" class="form-textarea" rows="3" placeholder="Décrivez votre idée de contenu ici…"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Plateformes</label>
+        <div class="platform-checks">
+          <input type="checkbox" class="platform-check" id="np-tiktok" value="tiktok">
+          <label for="np-tiktok" class="platform-label">🎵 TikTok</label>
+          <input type="checkbox" class="platform-check" id="np-ig-reels" value="ig_reels">
+          <label for="np-ig-reels" class="platform-label">🎬 IG Reels</label>
+          <input type="checkbox" class="platform-check" id="np-instagram" value="instagram">
+          <label for="np-instagram" class="platform-label">📸 Instagram</label>
+          <input type="checkbox" class="platform-check" id="np-facebook" value="facebook">
+          <label for="np-facebook" class="platform-label">👥 Facebook</label>
+          <input type="checkbox" class="platform-check" id="np-youtube" value="youtube">
+          <label for="np-youtube" class="platform-label">📺 YouTube</label>
+          <input type="checkbox" class="platform-check" id="np-pinterest" value="pinterest">
+          <label for="np-pinterest" class="platform-label">📌 Pinterest</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Format</label>
+        <select id="contentTypeSelect" class="form-select">
+          <option value="video">Vidéo (vertical 9:16)</option>
+          <option value="carousel">Carousel</option>
+          <option value="pinterest">Pinterest</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('newPipelineModal')">Annuler</button>
+      <button class="btn btn-primary" onclick="runPipeline()">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l12 6-12 6V4z"/></svg>
+        Lancer le pipeline
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="pipelineModal">
   <div class="modal modal-lg">
     <div class="modal-header">
-      <h2>🔄 Exécution du pipeline</h2>
+      <div>
+        <h2 id="pipelineModalTitle">🔄 Exécution du pipeline</h2>
+        <div style="font-size:13px;color:var(--text3);margin-top:2px" id="pipelineIdea2"></div>
+      </div>
       <button class="modal-close" onclick="closeModal('pipelineModal')">
         <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l12 12M16 4L4 16"/></svg>
       </button>
@@ -1993,12 +2046,15 @@ async function api(path, opts = {}) {
 }
 
 function switchAuthTab(tab) {
-  document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
-  document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+  document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+  document.getElementById(tab === 'login' ? 'loginForm' : 'registerForm').classList.add('active');
   document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
   document.querySelector(`.auth-tab[data-tab="${tab}"]`).classList.add('active');
   document.getElementById('authError').className = 'auth-error';
 }
+
+function handleLogin(e) { e.preventDefault(); doLogin(); }
+function handleRegister(e) { e.preventDefault(); doRegister(); }
 
 async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
@@ -2022,7 +2078,7 @@ async function doLogin() {
 async function doRegister() {
   const email = document.getElementById('regEmail').value.trim();
   const password = document.getElementById('regPassword').value;
-  const password2 = document.getElementById('regPassword2').value;
+  const password2 = document.getElementById('regConfirm').value;
   const invite_code = document.getElementById('regInvite').value;
   const errEl = document.getElementById('authError');
   if (password !== password2) {
@@ -2083,6 +2139,7 @@ const PAGE_TITLES = {
   contenus:'Contenus', planning:'Planning', analytics:'Analytics', settings:'Réglages'
 };
 
+const navTo = (page) => navigate(page);
 function navigate(page) {
   CURRENT_PAGE = page;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -2208,26 +2265,50 @@ async function loadFeed() {
   }
 }
 
+function openPipelineModal() {
+  closeModal('newPipelineModal');
+  openModal('newPipelineModal');
+  setTimeout(() => document.getElementById('pipelineIdea')?.focus(), 100);
+}
+
+function launchPipeline() {
+  const idea = document.getElementById('launchIdea')?.value?.trim();
+  if (idea) document.getElementById('pipelineIdea').value = idea;
+  const type = document.getElementById('launchType')?.value;
+  if (type) document.getElementById('contentTypeSelect').value = type;
+  // sync platform checkboxes: dashboard plt-* → modal np-*
+  document.querySelectorAll('#pageDashboard .platform-check').forEach(cb => {
+    const modalId = 'np-' + cb.value.replace(/_/g, '-');
+    const modalCb = document.getElementById(modalId);
+    if (modalCb) modalCb.checked = cb.checked;
+  });
+  runPipeline();
+}
+
 async function runPipeline() {
   const idea = document.getElementById('pipelineIdea')?.value?.trim();
   if (!idea) { toast('Décrivez votre idée de contenu', 'warn'); return; }
-  const platforms = [...document.querySelectorAll('.platform-check:checked')].map(c => c.value);
+  const platforms = [...document.querySelectorAll('#newPipelineModal .platform-check:checked')].map(c => c.value);
   if (!platforms.length) { toast('Sélectionnez au moins une plateforme', 'warn'); return; }
   const content_type = document.getElementById('contentTypeSelect')?.value || 'video';
 
   PIPELINE_ACTIVE = true;
   resetAgentStates();
-  document.getElementById('launchBtn').disabled = true;
-  document.getElementById('launchBtn').innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px"></span> En cours…';
+  const launchBtn = document.getElementById('launchBtn');
+  if (launchBtn) { launchBtn.disabled = true; launchBtn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px"></span> En cours…'; }
 
-  // Show pipeline modal progress
-  document.getElementById('pipelineModalTitle').textContent = 'Pipeline en cours…';
+  // Close input modal, open progress modal
+  closeModal('newPipelineModal');
+  document.getElementById('pipelineModalTitle').textContent = '🔄 Pipeline en cours…';
   document.getElementById('pipelineIdea2').textContent = idea;
+  document.getElementById('pipelineStopBtn').style.display = '';
+  document.getElementById('pipelineCloseBtn').style.display = 'none';
+  document.getElementById('pipelineOutputPreview').textContent = 'Démarrage du pipeline…';
   openModal('pipelineModal');
 
+  const seq = ['manager','marketing','scripter','design','control','monteur','planner'];
   try {
     // Animate agents sequentially
-    const seq = ['manager','marketing','scripter','design','control','monteur','planner'];
     for (let i = 0; i < seq.length; i++) {
       setAgentState(seq[i], 'active');
       if (i > 0) setAgentState(seq[i-1], 'active');
@@ -2256,8 +2337,10 @@ async function runPipeline() {
     for (const k of seq) if (AGENT_STATES[k]==='active') setAgentState(k, 'error');
   } finally {
     PIPELINE_ACTIVE = false;
-    document.getElementById('launchBtn').disabled = false;
-    document.getElementById('launchBtn').innerHTML = '▶ Lancer le pipeline';
+    const lb = document.getElementById('launchBtn');
+    if (lb) { lb.disabled = false; lb.innerHTML = '<svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l12 6-12 6V4z"/></svg> Lancer le pipeline'; }
+    document.getElementById('pipelineStopBtn').style.display = 'none';
+    document.getElementById('pipelineCloseBtn').style.display = '';
   }
 }
 
@@ -2382,10 +2465,12 @@ async function saveBrand() {
 
 let _editingScript = null;
 
+function filterScripts() { loadScripts(); }
+
 async function loadScripts() {
-  const state = document.getElementById('scriptStateFilter')?.value || '';
-  const type  = document.getElementById('scriptTypeFilter')?.value || '';
-  const q     = document.getElementById('scriptSearch')?.value || '';
+  const state = document.getElementById('scriptsStateFilter')?.value || '';
+  const type  = document.getElementById('scriptsTypeFilter')?.value || '';
+  const q     = document.getElementById('scriptsSearch')?.value || '';
   const params = new URLSearchParams();
   if (state) params.set('state', state);
   if (type)  params.set('content_type', type);
@@ -2502,65 +2587,159 @@ async function uploadScriptImage() {
   }
 }
 
-async function loadContenus(tab = 'pending') {
-  const state = tab === 'pending' ? 'generating,ready' : 'published';
+const PLAT_EMOJI = { tiktok:'🎵', ig_reels:'🎬', instagram:'📸', facebook:'👥', youtube:'📺', youtube_shorts:'📺', pinterest:'📌' };
+const STATE_CLS  = { generating:'badge-neutral', ready:'badge-ok', published:'badge-info', failed:'badge-err' };
+const STATE_LBL  = { generating:'Génération…', ready:'Prêt', published:'Publié', failed:'Échec' };
+const TYPE_ICON  = { video:'🎬', carousel:'🖼️', pinterest:'📌' };
+
+async function loadContenus(tab = 'planifier') {
   const contents = await api('/api/contents');
   if (!contents) return;
-  const filtered = contents.filter(c => tab === 'pending' ? c.state !== 'published' : c.state === 'published');
-  const el = document.getElementById('contenusGrid');
+
+  const pending   = contents.filter(c => c.state !== 'published');
+  const published = contents.filter(c => c.state === 'published');
+
+  renderContenuGrid('contenuGridPlanifier', pending,   'Approuvez des scripts pour générer des contenus');
+  renderContenuGrid('contenuGridPublies',   published, 'Vos contenus publiés apparaîtront ici');
+
+  // activate requested tab
+  switchContenuTab(tab, null, false);
+}
+
+function renderContenuGrid(elId, list, emptyMsg) {
+  const el = document.getElementById(elId);
   if (!el) return;
-  if (!filtered.length) {
-    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🎬</div><h3>Aucun contenu</h3><p>Approuvez des scripts pour générer des contenus</p></div>';
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">🎬</div><div class="empty-state-title">Aucun contenu</div><div class="empty-state-sub">${emptyMsg}</div></div>`;
     return;
   }
-  const platformEmoji = { tiktok:'🎵', instagram:'📷', instagram_reels:'🎬', facebook:'👥', youtube:'▶', youtube_shorts:'📱', pinterest:'📌' };
-  el.innerHTML = filtered.map(c => {
-    const ratio = c.format === '1920x1080' ? 'landscape' : c.format === '1080x1350' ? 'square' : '';
-    const icon = c.type === 'video' ? '🎬' : c.type === 'carousel' ? '🖼️' : '📌';
+  el.innerHTML = list.map(c => {
+    const aspectStyle = c.format === '1920x1080' ? 'aspect-ratio:16/9' : c.format === '1080x1350' ? 'aspect-ratio:4/5' : 'aspect-ratio:9/16';
+    const slidesArr = c.slides || [];
+    const slideInfo = c.type === 'carousel' ? `<span>${slidesArr.length || '—'} slides</span> ·` : '';
+    const caption   = c.caption ? esc(c.caption).substring(0, 60) + (c.caption.length > 60 ? '…' : '') : '(sans légende)';
+    const stateCs   = STATE_CLS[c.state] || 'badge-neutral';
+    const stateLb   = STATE_LBL[c.state] || c.state;
     return `<div class="content-card">
-      <div class="content-thumb ${ratio}">${icon}</div>
-      <div class="content-info">
-        <div class="content-platform">${platformEmoji[c.platform]||'📱'} ${c.platform.replace('_',' ')}</div>
-        <div class="content-name">${esc(c.caption || c.type)}</div>
-        <div class="content-format">${c.format||'—'} · <span class="badge ${c.state==='ready'?'badge-ok':'badge-neutral'}" style="font-size:9px">${c.state}</span></div>
+      <div class="content-thumb" style="${aspectStyle};background:linear-gradient(135deg,var(--bg2),var(--sep))">
+        <div class="content-thumb-placeholder">${TYPE_ICON[c.type]||'🎬'}</div>
+        <span class="badge ${stateCs}" style="position:absolute;top:8px;right:8px;font-size:10px">${stateLb}</span>
+      </div>
+      <div class="content-card-body">
+        <div class="content-card-title">${caption}</div>
+        <div class="content-card-meta">
+          <span>${PLAT_EMOJI[c.platform]||'📱'} ${c.platform.replace(/_/g,' ')}</span>
+          · ${slideInfo}
+          <span>${c.format||'—'}</span>
+        </div>
+      </div>
+      <div class="content-card-actions">
+        ${c.state === 'ready' ? `<button class="btn btn-primary btn-sm" style="flex:1" onclick="openScheduleModal(${c.id},'${c.platform}')">📅 Planifier</button>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="deleteContent(${c.id})">🗑</button>
       </div>
     </div>`;
   }).join('');
 }
 
-function switchContenusTab(tab) {
-  document.querySelectorAll('.contenus-tab').forEach(t => t.classList.remove('active'));
-  document.querySelector(`.contenus-tab[data-tab="${tab}"]`)?.classList.add('active');
-  loadContenus(tab);
+function switchContenuTab(tab, el, doLoad = true) {
+  document.querySelectorAll('#pageContenus .tab-btn').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#pageContenus .tab-panel').forEach(p => p.classList.remove('active'));
+  if (el) el.classList.add('active');
+  else {
+    const btn = document.querySelector(`#pageContenus .tab-btn[data-tab="${tab}"]`);
+    if (btn) btn.classList.add('active');
+  }
+  const panelId = tab === 'planifier' ? 'tabPlanifier' : 'tabPublies';
+  document.getElementById(panelId)?.classList.add('active');
+  if (doLoad) loadContenus(tab);
 }
 
+async function deleteContent(id) {
+  if (!confirm('Supprimer ce contenu ?')) return;
+  try { await api('/api/contents/'+id, {method:'DELETE'}); toast('Contenu supprimé','ok'); loadContenus(); }
+  catch(e) { toast(e.message,'err'); }
+}
+
+function openScheduleModal(contentId, platform) {
+  document.getElementById('schedContentId').value = contentId;
+  document.getElementById('schedPlatform').value = platform || '';
+  // pre-fill date = tomorrow
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  document.getElementById('schedDate').value = tomorrow.toISOString().split('T')[0];
+  document.getElementById('schedTime').value = '09:00';
+  openModal('scheduleModal');
+}
+
+async function submitSchedule() {
+  const content_id = +document.getElementById('schedContentId').value;
+  const platform   = document.getElementById('schedPlatform').value;
+  const date       = document.getElementById('schedDate').value;
+  const time       = document.getElementById('schedTime').value;
+  if (!date || !time || !platform) { toast('Remplissez tous les champs','warn'); return; }
+  const scheduled_at = new Date(`${date}T${time}:00`).toISOString();
+  try {
+    await api('/api/publications', { method:'POST', body: JSON.stringify({ content_id, platform, scheduled_at, status:'scheduled' }) });
+    toast('Publication planifiée ✓','ok');
+    closeModal('scheduleModal');
+    navigate('planning');
+  } catch(e) { toast(e.message,'err'); }
+}
+
+function filterPlanning() { loadPlanning(); }
+function schedulePub()   { navigate('contenus'); toast('Sélectionnez un contenu et cliquez « Planifier »','info'); }
+
 async function loadPlanning() {
-  const pubs = await api('/api/publications');
+  const platform = document.getElementById('planningPlatform')?.value || '';
+  const status   = document.getElementById('planningStatus')?.value || '';
+  const date     = document.getElementById('planningDate')?.value || '';
+  const params   = new URLSearchParams();
+  if (platform) params.set('platform', platform);
+  if (status)   params.set('status', status);
+
+  const pubs = await api('/api/publications?' + params);
   const el = document.getElementById('pubList');
   if (!el) return;
-  if (!pubs?.length) {
-    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><h3>Aucune publication planifiée</h3><p>Planifiez vos contenus depuis la page Contenus</p></div>';
+
+  let list = pubs || [];
+  if (date) list = list.filter(p => p.scheduled_at && p.scheduled_at.startsWith(date));
+
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📅</div><div class="empty-state-title">Aucune publication planifiée</div><div class="empty-state-sub">Planifiez vos contenus depuis la page Contenus</div></div>';
     return;
   }
-  const platformEmoji = { tiktok:'🎵', instagram:'📷', instagram_reels:'🎬', facebook:'👥', youtube:'▶', youtube_shorts:'📱', pinterest:'📌' };
-  const statusInfo = { scheduled:{label:'Planifié',cls:'badge-info'}, published:{label:'Publié',cls:'badge-ok'}, paused:{label:'Pause',cls:'badge-warn'}, failed:{label:'Échec',cls:'badge-err'} };
-  el.innerHTML = pubs.map(p => {
-    const si = statusInfo[p.status] || statusInfo.scheduled;
-    return `<div class="pub-card">
-      <div class="pub-platform-icon" style="background:#E8F3FF;font-size:22px">${platformEmoji[p.platform]||'📱'}</div>
-      <div class="pub-info">
-        <div class="pub-title">${p.platform.replace('_',' ')} · Contenu #${p.content_id}</div>
-        <div class="pub-meta">${p.scheduled_at ? '📅 ' + formatDateTime(p.scheduled_at) : 'Non planifié'}</div>
-      </div>
-      <div class="pub-status">
+
+  const STATUS_INFO = { scheduled:{label:'Planifié',cls:'badge-info'}, published:{label:'Publié',cls:'badge-ok'}, paused:{label:'Pause',cls:'badge-warn'}, failed:{label:'Échec',cls:'badge-err'} };
+
+  // Group by day
+  const byDay = {};
+  list.forEach(p => {
+    const day = p.scheduled_at ? p.scheduled_at.split('T')[0] : 'Sans date';
+    if (!byDay[day]) byDay[day] = [];
+    byDay[day].push(p);
+  });
+
+  el.innerHTML = Object.keys(byDay).sort().reverse().map(day => {
+    const label = day === 'Sans date' ? 'Sans date' : new Date(day+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+    const cards = byDay[day].map(p => {
+      const si = STATUS_INFO[p.status] || STATUS_INFO.scheduled;
+      const time = p.scheduled_at ? new Date(p.scheduled_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : '';
+      return `<div class="pub-item">
+        <div class="pub-platform" style="font-size:22px">${PLAT_EMOJI[p.platform]||'📱'}</div>
+        <div class="pub-body">
+          <div class="pub-title">${p.platform.replace(/_/g,' ')} — Contenu #${p.content_id}</div>
+          <div class="pub-meta">${time ? '🕐 '+time : ''}${p.woopsocial_id ? ' · WoopSocial #'+p.woopsocial_id : ''}</div>
+        </div>
         <span class="badge ${si.cls}">${si.label}</span>
-        ${p.status !== 'paused' && p.status !== 'published'
-          ? `<button class="btn btn-ghost btn-sm" onclick="pausePub(${p.id})">⏸ Pause</button>`
-          : p.status === 'paused'
-          ? `<button class="btn btn-ghost btn-sm" onclick="resumePub(${p.id})">▶ Reprendre</button>`
-          : ''}
-        <button class="btn btn-danger btn-sm" onclick="deletePub(${p.id})">🗑</button>
-      </div>
+        <div class="pub-actions">
+          ${p.status === 'scheduled' ? `<button class="btn btn-ghost btn-sm" onclick="pausePub(${p.id})">⏸</button>` : ''}
+          ${p.status === 'paused'    ? `<button class="btn btn-ghost btn-sm" onclick="resumePub(${p.id})">▶</button>` : ''}
+          <button class="btn btn-ghost btn-sm" onclick="deletePub(${p.id})">🗑</button>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--sep)">${label}</div>
+      ${cards}
     </div>`;
   }).join('');
 }
@@ -2579,55 +2758,120 @@ async function deletePub(id) {
   catch(e) { toast(e.message,'err'); }
 }
 
+const AGENT_COLORS = { manager:'#69ADFF', marketing:'#F18AB5', scripter:'#9F7FE0', design:'#00BACC', control:'#FFB830', monteur:'#FF8A65', planner:'#A8C8FF' };
+const AGENT_LABELS = { manager:'Manager', marketing:'Marketing', scripter:'Scripter', design:'Design', control:'Contrôle', monteur:'Monteur', planner:'Planner' };
+
 async function loadAnalytics() {
   try {
-    const [stats, costs] = await Promise.all([api('/api/analytics'), api('/api/analytics/costs')]);
-    if (!stats || !costs) return;
+    const [stats, costs, runs] = await Promise.all([
+      api('/api/analytics'),
+      api('/api/analytics/costs'),
+      api('/api/agent-runs?limit=40'),
+    ]);
+    if (!stats) return;
 
-    // KPIs
-    const el = doc => document.getElementById(doc);
-    if (el('anScripts')) el('anScripts').textContent = stats.scripts?.total ?? 0;
-    if (el('anContenus')) el('anContenus').textContent = stats.contents?.total ?? 0;
-    if (el('anTokens')) el('anTokens').textContent = (stats.tokens || 0).toLocaleString('fr');
-    if (el('anCost')) el('anCost').textContent = (stats.cost_eur || 0).toFixed(4) + ' €';
+    // ── KPIs ──────────────────────────────────────────
+    const $ = id => document.getElementById(id);
+    const set = (id, v) => { if ($(id)) $(id).textContent = v; };
+    set('aKpiScripts',  stats.scripts?.total ?? 0);
+    set('aKpiScriptsSub', `dont ${stats.scripts?.approved ?? 0} approuvés`);
+    set('aKpiContents', stats.contents?.total ?? 0);
+    set('aKpiContentsSub', `dont ${stats.publications?.published ?? 0} publiés`);
+    set('aKpiCost',     (stats.cost_eur || 0).toFixed(4) + ' €');
+    set('aKpiTokens',   (stats.tokens || 0).toLocaleString('fr'));
 
-    // Cost tracker by agent
-    const costEl = document.getElementById('costTracker');
-    if (costEl && costs.by_agent) {
-      const agentColors = { manager:'#69ADFF', marketing:'#F18AB5', scripter:'#9F7FE0', design:'#00BACC', control:'#FFB830', monteur:'#FF8A65', planner:'#A8C8FF' };
-      const maxCost = Math.max(...Object.values(costs.by_agent).map(v => v.cost_eur), 0.001);
-      costEl.innerHTML = Object.entries(costs.by_agent).map(([agent, v]) => `
-        <div class="cost-item">
-          <span class="cost-agent">${agent.toUpperCase()}</span>
-          <div class="cost-bar-wrap"><div class="cost-bar-fill" style="width:${(v.cost_eur/maxCost*100).toFixed(1)}%;background:${agentColors[agent]||'#69ADFF'}"></div></div>
-          <span class="cost-value">${v.cost_eur.toFixed(4)} €</span>
-        </div>
-      `).join('') || '<div class="empty-state"><p>Aucune donnée de coût</p></div>';
+    // ── Coût par agent ────────────────────────────────
+    const costEl = $('costByAgent');
+    if (costEl && costs?.by_agent && Object.keys(costs.by_agent).length) {
+      const maxCost = Math.max(...Object.values(costs.by_agent).map(v => v.cost_eur), 0.0001);
+      costEl.innerHTML = Object.entries(costs.by_agent)
+        .sort((a,b) => b[1].cost_eur - a[1].cost_eur)
+        .map(([agent, v]) => `
+        <div class="bar-row">
+          <div class="bar-label" style="color:${AGENT_COLORS[agent]||'var(--cta)'}">${AGENT_LABELS[agent]||agent}</div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${(v.cost_eur/maxCost*100).toFixed(1)}%;background:${AGENT_COLORS[agent]||'var(--cta)'}"></div>
+          </div>
+          <div class="bar-val">${v.cost_eur.toFixed(4)}€ <span style="color:var(--text3);font-size:10px">(${v.runs}×)</span></div>
+        </div>`).join('');
+    } else if (costEl) {
+      costEl.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px 0">Lancez un pipeline pour voir les coûts</div>';
     }
 
-    // Recent runs for viewer
-    const runs = await api('/api/agent-runs?limit=30');
-    const runEl = document.getElementById('analyticsRuns');
+    // ── Tendance 14 jours ─────────────────────────────
+    const trendEl = $('costTrend');
+    const labelsEl = $('costTrendLabels');
+    if (trendEl && costs?.trend?.length) {
+      const maxVal = Math.max(...costs.trend.map(d => d.cost_eur), 0.0001);
+      trendEl.innerHTML = costs.trend.map((d, i) => {
+        const h = Math.max((d.cost_eur / maxVal * 70), d.cost_eur > 0 ? 3 : 1);
+        const isToday = i === costs.trend.length - 1;
+        return `<div title="${d.date}: ${d.cost_eur.toFixed(4)}€" style="flex:1;height:${h}px;background:${isToday?'var(--cta)':'var(--cta2)'};opacity:${isToday?1:0.6};border-radius:3px 3px 0 0;transition:height .4s ease;cursor:default"></div>`;
+      }).join('');
+      if (labelsEl) {
+        const first = costs.trend[0]?.date?.slice(5) || '';
+        const mid   = costs.trend[6]?.date?.slice(5) || '';
+        const last  = costs.trend[13]?.date?.slice(5) || '';
+        labelsEl.innerHTML = `<span>${first}</span><span>${mid}</span><span>${last}</span>`;
+      }
+    }
+
+    // ── Historique des runs ───────────────────────────
+    const runEl = $('agentRunList');
     if (runEl && runs?.length) {
-      const agentColors = { manager:'#69ADFF', marketing:'#F18AB5', scripter:'#9F7FE0', design:'#00BACC', control:'#FFB830', monteur:'#FF8A65', planner:'#A8C8FF' };
       runEl.innerHTML = runs.map(r => `
         <div class="feed-item" onclick="openAgentModal('${r.agent}',${r.id})" style="cursor:pointer">
-          <div class="feed-dot ${r.state==='done'?'feed-dot-ok':r.state==='error'?'feed-dot-err':'feed-dot-run'}"></div>
+          <div class="feed-dot ${r.state==='done'?'feed-dot-ok':r.state==='error'?'feed-dot-err':''}"></div>
           <div style="flex:1;min-width:0">
-            <div style="display:flex;align-items:center;gap:6px">
-              <span style="font-size:11px;font-weight:700;color:${agentColors[r.agent]||'#69ADFF'}">${r.agent.toUpperCase()}</span>
-              <span class="badge badge-neutral" style="font-size:9px">${r.state}</span>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+              <span style="font-size:11px;font-weight:800;color:${AGENT_COLORS[r.agent]||'var(--cta)'}">${r.agent.toUpperCase()}</span>
+              <span class="badge ${r.state==='done'?'badge-ok':r.state==='error'?'badge-err':'badge-neutral'}" style="font-size:9px">${r.state}</span>
+              <span style="font-size:10px;color:var(--text3)">${r.duration_ms ? (r.duration_ms/1000).toFixed(1)+'s' : ''}</span>
             </div>
-            <div class="feed-text">${esc((r.output_text||'').slice(0,100))}</div>
+            <div class="feed-text" style="font-size:12px">${esc((r.output_text||'').slice(0,120))}${(r.output_text||'').length>120?'…':''}</div>
           </div>
-          <div style="text-align:right;flex-shrink:0">
+          <div style="text-align:right;flex-shrink:0;margin-left:12px">
             <div class="feed-time">${formatTime(r.created_at)}</div>
-            <div style="font-size:10px;color:#9CA3AF">${r.cost_eur?.toFixed(4)||0}€</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">${r.cost_eur?r.cost_eur.toFixed(5)+'€':''}</div>
           </div>
-        </div>
-      `).join('');
+        </div>`).join('');
+    } else if (runEl && !runs?.length) {
+      runEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><div class="empty-state-title">Aucun run</div><div class="empty-state-sub">Les exécutions du pipeline apparaîtront ici</div></div>';
     }
   } catch(e) { console.error('Analytics error', e); }
+}
+
+async function generateDigest() {
+  const btn = document.getElementById('digestBtn');
+  const out = document.getElementById('digestOutput');
+  const statsEl = document.getElementById('digestStats');
+  if (!btn || !out) return;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px"></span> Génération…';
+  out.textContent = '⏳ Zeus analyse la journée…';
+  try {
+    const res = await api('/api/digest', { method:'POST' });
+    if (!res) throw new Error('Pas de réponse');
+    out.textContent = res.digest || '—';
+    if (res.stats && statsEl) {
+      const s = res.stats;
+      statsEl.innerHTML = [
+        ['🔄 Runs', s.runs ?? 0],
+        ['📝 Scripts', s.scripts ?? 0],
+        ['🎬 Contenus', s.contents ?? 0],
+        ['📅 Publications', s.publications ?? 0],
+        ['💰 Coût', (s.cost_eur ?? 0).toFixed(4) + '€'],
+        ['🔤 Tokens', (s.tokens ?? 0).toLocaleString('fr')],
+      ].map(([l,v]) => `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px"><span style="color:var(--text3)">${l}</span> <strong>${v}</strong></div>`).join('');
+    }
+    toast('Résumé généré ✓', 'ok');
+  } catch(e) {
+    out.textContent = 'Erreur : ' + e.message;
+    toast('Erreur digest', 'err');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l12 6-12 6V4z"/></svg> Générer';
+  }
 }
 
 async function loadSettings() {
