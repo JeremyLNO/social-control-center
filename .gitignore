@@ -1,0 +1,8 @@
+*.db
+uploads/
+.env
+.venv
+__pycache__/
+*.pyc
+.vercel
+.DS_Store

@@ -1,0 +1,2692 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Social Control Center</title>
+<style>
+:root {
+  --bg:#F7F7FB; --bg2:#F1F2F6; --bg3:#F8F8FC; --card:#FFFFFF;
+  --border:#E6E6EF; --sep:#ECECF3;
+  --text:#2B2B46; --text2:#606070; --text3:#9CA3AF; --title:#303150; --inv:#FFFFFF;
+  --cta:#69ADFF; --cta-h:#4F9BFA; --cta2:#9F7FE0; --cta2-h:#8B6ED8; --cta-dis:#E5E7EB;
+  --ok:#22B86A; --warn:#F5B94E; --err:#FF4D6D; --info:#69ADFF;
+  --bg-ok:#DDF8EA; --bg-warn:#FFF1D6; --bg-err:#FFE0EF; --bg-info:#E8F3FF;
+  --sb-bg:#FFFFFF; --sb-hover:#F4F7FF; --sb-active:#E8F3FF;
+  --sb-icon-a:#69ADFF; --sb-icon-i:#BDBDCB; --sb-text:#7E7F90; --sb-text-a:#303150;
+  --radius:12px; --radius-sm:8px; --radius-lg:16px;
+  --shadow:0 2px 12px rgba(43,43,70,.07); --shadow-lg:0 8px 32px rgba(43,43,70,.13);
+  --sb-w:230px; --topbar-h:64px;
+  --transition:all .18s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:15px;background:var(--bg);color:var(--text);line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--cta);text-decoration:none}
+a:hover{text-decoration:underline}
+img{max-width:100%;display:block}
+input,textarea,select,button{font-family:inherit;font-size:inherit}
+button{cursor:pointer;border:none;background:none}
+ul,ol{list-style:none}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--sep);border-radius:99px}
+
+/* ── APP LAYOUT ── */
+#app{display:flex;height:100vh;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:var(--sb-w);min-width:var(--sb-w);height:100%;
+  background:var(--sb-bg);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;z-index:10;
+}
+.sb-logo{
+  display:flex;align-items:center;gap:10px;padding:20px 18px 16px;
+  border-bottom:1px solid var(--sep);
+}
+.sb-logo-mark{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--cta),var(--cta2));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:13px;color:var(--inv);letter-spacing:-.3px;
+}
+.sb-logo-text{font-weight:700;font-size:14px;color:var(--title);line-height:1.2}
+.sb-logo-sub{font-size:11px;color:var(--text3);font-weight:400}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 10px;display:flex;flex-direction:column;gap:2px}
+.sb-item{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;
+  border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);
+  color:var(--sb-text);font-weight:500;font-size:14px;user-select:none;
+}
+.sb-item:hover{background:var(--sb-hover);color:var(--sb-text-a)}
+.sb-item.active{background:var(--sb-active);color:var(--sb-text-a)}
+.sb-item svg{flex-shrink:0;width:18px;height:18px;color:var(--sb-icon-i);transition:var(--transition)}
+.sb-item:hover svg,.sb-item.active svg{color:var(--sb-icon-a)}
+.sb-sep{height:1px;background:var(--sep);margin:6px 4px}
+.sb-footer{
+  padding:12px 14px;border-top:1px solid var(--sep);
+  display:flex;align-items:center;gap:10px;
+}
+.sb-avatar{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--cta),var(--cta2));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:12px;color:var(--inv);
+}
+.sb-user-info{flex:1;min-width:0}
+.sb-user-email{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-logout{
+  width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  color:var(--text3);transition:var(--transition);flex-shrink:0;
+}
+.sb-logout:hover{background:var(--bg-err);color:var(--err)}
+
+/* ── MAIN AREA ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* ── TOPBAR ── */
+.topbar{
+  height:var(--topbar-h);min-height:var(--topbar-h);
+  display:flex;align-items:center;gap:14px;padding:0 24px;
+  background:var(--card);border-bottom:1px solid var(--border);z-index:5;
+}
+.topbar-title{font-size:18px;font-weight:700;color:var(--title);flex:1}
+.topbar-search{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:7px 12px;
+}
+.topbar-search input{
+  background:none;border:none;outline:none;color:var(--text);font-size:14px;width:200px;
+}
+.topbar-search input::placeholder{color:var(--text3)}
+.topbar-search svg{color:var(--text3);flex-shrink:0}
+
+/* ── PAGES WRAPPER ── */
+.pages{flex:1;overflow:hidden;position:relative}
+.page{display:none;height:100%;overflow-y:auto;padding:24px}
+.page.active{display:block}
+.page-title{font-size:28px;font-weight:800;color:var(--title);margin-bottom:6px}
+.page-sub{font-size:14px;color:var(--text2);margin-bottom:24px}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;padding:9px 18px;
+  border-radius:var(--radius-sm);font-weight:600;font-size:14px;
+  transition:var(--transition);white-space:nowrap;
+}
+.btn-primary{background:var(--cta);color:var(--inv)}
+.btn-primary:hover{background:var(--cta-h)}
+.btn-secondary{background:var(--bg2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--sep)}
+.btn-ghost{background:transparent;color:var(--text2)}
+.btn-ghost:hover{background:var(--bg2)}
+.btn-danger{background:var(--bg-err);color:var(--err)}
+.btn-danger:hover{background:var(--err);color:var(--inv)}
+.btn-purple{background:var(--cta2);color:var(--inv)}
+.btn-purple:hover{background:var(--cta2-h)}
+.btn-sm{padding:6px 12px;font-size:13px}
+.btn-lg{padding:12px 24px;font-size:16px}
+.btn:disabled,.btn[disabled]{background:var(--cta-dis);color:var(--text3);cursor:not-allowed;pointer-events:none}
+
+/* ── BADGES ── */
+.badge{
+  display:inline-flex;align-items:center;gap:4px;padding:2px 9px;
+  border-radius:99px;font-size:12px;font-weight:600;
+}
+.badge-ok{background:var(--bg-ok);color:var(--ok)}
+.badge-warn{background:var(--bg-warn);color:var(--warn)}
+.badge-err{background:var(--bg-err);color:var(--err)}
+.badge-info{background:var(--bg-info);color:var(--info)}
+.badge-neutral{background:var(--bg2);color:var(--text2)}
+.badge-purple{background:#F3EEFF;color:var(--cta2)}
+
+/* ── CARD ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.card-title{font-size:16px;font-weight:700;color:var(--title);margin-bottom:4px}
+.card-sub{font-size:13px;color:var(--text2)}
+
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.kpi-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px 22px;
+}
+.kpi-label{font-size:13px;color:var(--text2);font-weight:500;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.kpi-value{font-size:34px;font-weight:800;color:var(--title);line-height:1;margin-bottom:4px}
+.kpi-delta{font-size:12px;color:var(--text3)}
+.kpi-delta.up{color:var(--ok)}
+.kpi-delta.down{color:var(--err)}
+
+/* ── FORMS ── */
+.form-group{margin-bottom:18px}
+.form-label{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px;display:block}
+.form-input,.form-select,.form-textarea{
+  width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--bg3);color:var(--text);font-size:14px;transition:var(--transition);outline:none;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--cta);background:var(--inv);box-shadow:0 0 0 3px rgba(105,173,255,.13)}
+.form-textarea{resize:vertical;min-height:90px;line-height:1.55}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239CA3AF' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.form-hint{font-size:12px;color:var(--text3);margin-top:4px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-section-title{font-size:14px;font-weight:700;color:var(--title);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--sep)}
+
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.filter-bar .form-select{width:auto;min-width:140px}
+.filter-bar .form-input{width:auto;flex:1;min-width:180px}
+.filter-bar-spacer{flex:1}
+
+/* ── TABLES ── */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:11px 16px;background:var(--bg2);text-align:left;border-bottom:1px solid var(--border)}
+td{padding:13px 16px;border-bottom:1px solid var(--sep);font-size:14px;color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg3)}
+
+/* ── MODALS ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(43,43,70,.35);backdrop-filter:blur(3px);
+  z-index:1000;align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);
+  max-width:640px;width:100%;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;
+  border:1px solid var(--border);
+}
+.modal-lg{max-width:860px}
+.modal-xl{max-width:1040px}
+.modal-header{
+  display:flex;align-items:center;gap:12px;padding:18px 22px;
+  border-bottom:1px solid var(--sep);flex-shrink:0;
+}
+.modal-header h2{font-size:17px;font-weight:700;color:var(--title);flex:1}
+.modal-close{
+  width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  color:var(--text3);transition:var(--transition);
+}
+.modal-close:hover{background:var(--bg2);color:var(--text)}
+.modal-body{padding:22px;overflow-y:auto;flex:1}
+.modal-footer{padding:16px 22px;border-top:1px solid var(--sep);display:flex;align-items:center;gap:10px;justify-content:flex-end;flex-shrink:0}
+
+/* ── TOAST ── */
+#toastContainer{position:fixed;bottom:24px;right:24px;z-index:2000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{
+  display:flex;align-items:center;gap:10px;padding:12px 16px;
+  border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);font-size:14px;font-weight:500;
+  pointer-events:all;min-width:260px;max-width:360px;
+  animation:toastIn .22s ease;
+}
+.toast-ok{background:var(--bg-ok);color:var(--ok);border:1px solid rgba(34,184,106,.2)}
+.toast-err{background:var(--bg-err);color:var(--err);border:1px solid rgba(255,77,109,.2)}
+.toast-warn{background:var(--bg-warn);color:var(--warn);border:1px solid rgba(245,185,78,.2)}
+.toast-info{background:var(--bg-info);color:var(--info);border:1px solid rgba(105,173,255,.2)}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── AUTH OVERLAY ── */
+#authOverlay{
+  display:flex;position:fixed;inset:0;z-index:5000;
+  background:linear-gradient(135deg,#EEF2FF 0%,#F7F0FF 50%,#EFF7FF 100%);
+  align-items:center;justify-content:center;padding:20px;
+}
+.auth-card{
+  background:var(--card);border-radius:var(--radius-lg);box-shadow:0 16px 64px rgba(43,43,70,.16);
+  border:1px solid var(--border);width:100%;max-width:400px;padding:36px 32px;
+}
+.auth-logo{
+  width:54px;height:54px;border-radius:14px;margin:0 auto 18px;
+  background:linear-gradient(135deg,var(--cta),var(--cta2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:800;color:var(--inv);letter-spacing:-.5px;
+}
+.auth-title{font-size:22px;font-weight:800;color:var(--title);text-align:center;margin-bottom:4px}
+.auth-sub{font-size:13px;color:var(--text2);text-align:center;margin-bottom:24px}
+.auth-tabs{display:flex;background:var(--bg2);border-radius:var(--radius-sm);padding:3px;gap:3px;margin-bottom:22px}
+.auth-tab{
+  flex:1;text-align:center;padding:8px;border-radius:7px;font-size:14px;font-weight:600;
+  color:var(--text2);cursor:pointer;transition:var(--transition);
+}
+.auth-tab.active{background:var(--card);color:var(--title);box-shadow:0 1px 4px rgba(43,43,70,.1)}
+.auth-form{display:none}
+.auth-form.active{display:block}
+.auth-error{
+  background:var(--bg-err);color:var(--err);border-radius:var(--radius-sm);
+  padding:10px 14px;font-size:13px;font-weight:500;margin-bottom:14px;display:none;
+}
+.auth-error.show{display:block}
+.auth-btn{width:100%;padding:11px;border-radius:var(--radius-sm);font-size:15px;font-weight:700;background:var(--cta);color:var(--inv);transition:var(--transition);margin-top:4px}
+.auth-btn:hover{background:var(--cta-h)}
+
+/* ── CANVAS AREA ── */
+.canvas-wrap{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);margin-bottom:20px;overflow:hidden;
+  position:relative;height:220px;
+}
+#agentCanvas{width:100%;height:100%;display:block}
+
+/* ── PIPELINE BAR ── */
+.pipeline-bar{
+  display:flex;align-items:center;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 20px;margin-bottom:20px;gap:0;
+}
+.pipe-node{
+  display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;position:relative;
+}
+.pipe-node:not(:last-child)::after{
+  content:'';position:absolute;top:14px;left:calc(50% + 20px);
+  right:calc(-50% + 20px);height:2px;background:var(--sep);
+}
+.pipe-node.ok::after{background:var(--ok)}
+.pipe-node.running::after{background:var(--cta);opacity:.5}
+.pipe-dot{
+  width:30px;height:30px;border-radius:50%;border:2px solid var(--sep);
+  background:var(--bg2);display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:var(--text3);transition:var(--transition);
+}
+.pipe-node.ok .pipe-dot{background:var(--bg-ok);border-color:var(--ok);color:var(--ok)}
+.pipe-node.running .pipe-dot{background:var(--bg-info);border-color:var(--cta);color:var(--cta);animation:pulse 1.2s infinite}
+.pipe-node.err .pipe-dot{background:var(--bg-err);border-color:var(--err);color:var(--err)}
+.pipe-label{font-size:11px;font-weight:600;color:var(--text3)}
+.pipe-node.ok .pipe-label{color:var(--ok)}
+.pipe-node.running .pipe-label{color:var(--cta)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ── LIVE FEED ── */
+.feed{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);height:340px;display:flex;flex-direction:column;overflow:hidden;
+}
+.feed-header{padding:14px 16px 10px;border-bottom:1px solid var(--sep);font-size:14px;font-weight:700;color:var(--title);display:flex;align-items:center;gap:8px}
+.feed-dot{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
+.feed-body{flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:6px}
+.feed-line{font-size:13px;color:var(--text2);display:flex;gap:8px;align-items:flex-start}
+.feed-time{font-size:11px;color:var(--text3);white-space:nowrap;margin-top:1px;font-variant-numeric:tabular-nums}
+.feed-agent{font-weight:700;font-size:12px;padding:1px 7px;border-radius:99px;background:var(--bg2);color:var(--text2);white-space:nowrap}
+.feed-agent.mgr{background:#EEF2FF;color:#6366F1}
+.feed-agent.mkt{background:#FFF7ED;color:#F97316}
+.feed-agent.scr{background:var(--bg-info);color:var(--info)}
+.feed-agent.dsn{background:#F3EEFF;color:var(--cta2)}
+.feed-agent.ctl{background:var(--bg-ok);color:var(--ok)}
+.feed-agent.mnt{background:#FEF9EE;color:var(--warn)}
+.feed-agent.pln{background:#FFF0F3;color:var(--err)}
+
+/* ── LAUNCH CARD ── */
+.launch-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.launch-card .card-title{margin-bottom:14px}
+.platform-checks{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.platform-check{display:none}
+.platform-label{
+  display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:99px;
+  border:1.5px solid var(--border);font-size:13px;font-weight:600;cursor:pointer;
+  color:var(--text2);background:var(--bg2);transition:var(--transition);user-select:none;
+}
+.platform-check:checked + .platform-label{
+  border-color:var(--cta);background:var(--bg-info);color:var(--cta);
+}
+
+/* ── DASHBOARD 2-COL ── */
+.dash-grid{display:grid;grid-template-columns:1fr 360px;gap:16px}
+
+/* ── CONTENT GRID ── */
+.content-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.content-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden;
+}
+.content-thumb{
+  width:100%;aspect-ratio:9/16;background:var(--bg2);position:relative;overflow:hidden;
+}
+.content-thumb img{width:100%;height:100%;object-fit:cover}
+.content-thumb-placeholder{
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  font-size:32px;background:linear-gradient(135deg,var(--bg2),var(--sep));
+}
+.content-card-body{padding:12px 14px}
+.content-card-title{font-size:14px;font-weight:600;color:var(--title);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.content-card-meta{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.content-card-actions{padding:10px 14px;border-top:1px solid var(--sep);display:flex;gap:8px}
+
+/* ── SCRIPT ITEMS ── */
+.script-item{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:16px 20px;margin-bottom:10px;
+  display:flex;align-items:flex-start;gap:14px;
+}
+.script-item-icon{
+  width:40px;height:40px;border-radius:10px;background:var(--bg-info);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.script-item-body{flex:1;min-width:0}
+.script-item-title{font-size:15px;font-weight:700;color:var(--title);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.script-item-meta{font-size:13px;color:var(--text2);display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.script-item-preview{font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.script-item-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+
+/* ── PLANNING CARDS ── */
+.pub-item{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:14px 18px;margin-bottom:10px;
+  display:flex;align-items:center;gap:14px;
+}
+.pub-platform{font-size:24px;flex-shrink:0;width:36px;text-align:center}
+.pub-body{flex:1;min-width:0}
+.pub-title{font-size:14px;font-weight:600;color:var(--title);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pub-meta{font-size:12px;color:var(--text3);margin-top:3px;display:flex;gap:10px}
+.pub-actions{display:flex;gap:8px;flex-shrink:0}
+.pub-date{font-size:13px;font-weight:600;color:var(--text2);text-align:right;flex-shrink:0}
+
+/* ── ANALYTICS ── */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+.chart-title{font-size:15px;font-weight:700;color:var(--title);margin-bottom:16px}
+.bar-group{display:flex;flex-direction:column;gap:10px}
+.bar-row{display:flex;align-items:center;gap:10px;font-size:13px}
+.bar-label{width:90px;color:var(--text2);font-weight:500;flex-shrink:0;font-size:12px}
+.bar-track{flex:1;height:10px;background:var(--bg2);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--cta),var(--cta2));transition:width .6s ease}
+.bar-val{width:50px;text-align:right;color:var(--text3);font-size:12px;font-variant-numeric:tabular-nums}
+.agent-run-list{display:flex;flex-direction:column;gap:10px}
+.agent-run-item{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);cursor:pointer;
+}
+.agent-run-item:hover{border-color:var(--cta);background:var(--bg-info)}
+.agent-run-label{flex:1;font-size:14px;font-weight:600;color:var(--title)}
+.agent-run-meta{font-size:12px;color:var(--text3)}
+
+/* ── SETTINGS ── */
+.settings-section{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:22px;margin-bottom:18px;
+}
+.settings-section-title{font-size:15px;font-weight:700;color:var(--title);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.settings-section-sub{font-size:13px;color:var(--text2);margin-bottom:18px}
+.api-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.api-row .form-input{flex:1}
+.api-row-label{width:140px;font-size:13px;font-weight:600;color:var(--text2);flex-shrink:0}
+.danger-zone{border-color:rgba(255,77,109,.25);background:var(--bg-err)}
+.danger-zone .settings-section-title{color:var(--err)}
+
+/* ── BRAND PAGE ── */
+.brand-form{max-width:700px}
+.tag-input-wrap{
+  display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;
+  border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg3);
+  min-height:44px;cursor:text;transition:var(--transition);
+}
+.tag-input-wrap:focus-within{border-color:var(--cta);background:var(--inv)}
+.tag-pill{
+  display:flex;align-items:center;gap:4px;padding:3px 10px;
+  background:var(--bg-info);color:var(--info);border-radius:99px;font-size:13px;font-weight:600;
+}
+.tag-pill-remove{cursor:pointer;opacity:.7;line-height:1}
+.tag-pill-remove:hover{opacity:1}
+.tag-input-inner{border:none;background:none;outline:none;font-size:14px;color:var(--text);min-width:100px;flex:1}
+.color-swatches{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:8px 0}
+.color-swatch-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
+.color-swatch{width:36px;height:36px;border-radius:8px;border:2px solid var(--border);cursor:pointer;transition:var(--transition)}
+.color-swatch:hover{border-color:var(--cta);transform:scale(1.1)}
+.color-swatch-label{font-size:11px;color:var(--text3)}
+.color-add{
+  width:36px;height:36px;border-radius:8px;border:2px dashed var(--border);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);
+  font-size:20px;transition:var(--transition);
+}
+.color-add:hover{border-color:var(--cta);color:var(--cta)}
+
+/* ── SAFE AREA PREVIEW ── */
+.safe-preview-section{margin-top:28px}
+.safe-preview-title{font-size:15px;font-weight:700;color:var(--title);margin-bottom:4px}
+.safe-preview-sub{font-size:13px;color:var(--text2);margin-bottom:16px}
+.safe-frames{display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap}
+.safe-frame-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+.safe-frame{
+  background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;
+  position:relative;overflow:hidden;
+}
+.safe-frame-inner{
+  position:absolute;inset:0;
+}
+.safe-area-overlay{
+  position:absolute;
+  border:2px dashed rgba(105,173,255,.6);
+  border-radius:4px;
+  pointer-events:none;
+}
+.safe-frame-label{font-size:12px;color:var(--text3);font-weight:600;text-align:center}
+.safe-frame-dims{font-size:11px;color:var(--text3);text-align:center}
+
+/* ── MARKDOWN VIEWER ── */
+.md-viewer{
+  font-size:14px;line-height:1.75;color:var(--text);
+}
+.md-viewer h1{font-size:22px;font-weight:800;color:var(--title);margin:0 0 14px}
+.md-viewer h2{font-size:17px;font-weight:700;color:var(--title);margin:20px 0 10px}
+.md-viewer h3{font-size:15px;font-weight:700;color:var(--title);margin:16px 0 8px}
+.md-viewer p{margin-bottom:10px}
+.md-viewer ul,.md-viewer ol{padding-left:22px;margin-bottom:10px}
+.md-viewer li{margin-bottom:4px}
+.md-viewer code{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:'JetBrains Mono',monospace;font-size:13px}
+.md-viewer pre{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;overflow-x:auto;margin-bottom:12px}
+.md-viewer pre code{background:none;border:none;padding:0}
+.md-viewer blockquote{border-left:3px solid var(--cta);padding-left:14px;color:var(--text2);margin:10px 0}
+.md-viewer strong{font-weight:700;color:var(--title)}
+.md-viewer hr{border:none;border-top:1px solid var(--sep);margin:16px 0}
+
+/* ── MISC UTILITIES ── */
+.flex{display:flex}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-between{justify-content:space-between}.gap-8{gap:8px}.gap-12{gap:12px}.gap-16{gap:16px}
+.mt-8{margin-top:8px}.mt-12{margin-top:12px}.mt-16{margin-top:16px}.mt-24{margin-top:24px}
+.mb-8{margin-bottom:8px}.mb-12{margin-bottom:12px}.mb-16{margin-bottom:16px}.mb-24{margin-bottom:24px}
+.text-center{text-align:center}.text-right{text-align:right}
+.hidden{display:none!important}
+.w-full{width:100%}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-state-icon{font-size:48px;margin-bottom:14px;opacity:.5}
+.empty-state-title{font-size:16px;font-weight:600;color:var(--text2);margin-bottom:6px}
+.empty-state-sub{font-size:14px}
+.divider{height:1px;background:var(--sep);margin:16px 0}
+.spinner{
+  width:22px;height:22px;border:2.5px solid var(--sep);border-top-color:var(--cta);
+  border-radius:50%;animation:spin .7s linear infinite;display:inline-block;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--sep);margin-bottom:20px}
+.tab-btn{
+  padding:10px 18px;font-size:14px;font-weight:600;color:var(--text2);
+  border-bottom:2px solid transparent;margin-bottom:-1px;transition:var(--transition);cursor:pointer;
+}
+.tab-btn.active{color:var(--cta);border-bottom-color:var(--cta)}
+.tab-btn:hover:not(.active){color:var(--text)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.section-title{font-size:20px;font-weight:700;color:var(--title);margin-bottom:16px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.gradient-text{background:linear-gradient(135deg,var(--cta),var(--cta2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.onboarding-step{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--sep)}
+.onboarding-step:last-child{border-bottom:none}
+.step-icon{width:38px;height:38px;border-radius:10px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.step-icon.done{background:var(--bg-ok)}
+.step-body{flex:1;min-width:0}
+.step-title{font-size:14px;font-weight:700;color:var(--title);margin-bottom:2px}
+.step-sub{font-size:13px;color:var(--text2)}
+.step-check{font-size:20px;flex-shrink:0}
+.progress-bar-wrap{background:var(--bg2);border-radius:99px;height:8px;overflow:hidden;margin-bottom:16px}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--cta),var(--cta2));border-radius:99px;transition:width .5s ease}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     AUTH OVERLAY
+══════════════════════════════════════════════ -->
+<div id="authOverlay">
+  <div class="auth-card">
+    <div class="auth-logo">SCC</div>
+    <div class="auth-title">Social Control Center</div>
+    <div class="auth-sub">by <a href="mailto:jeremy@lno.company">Jeremy KB</a></div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchAuthTab('login')">Connexion</div>
+      <div class="auth-tab" onclick="switchAuthTab('register')">Créer un compte</div>
+    </div>
+    <div id="authError" class="auth-error"></div>
+
+    <!-- LOGIN -->
+    <form id="loginForm" class="auth-form active" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="loginEmail" class="form-input" placeholder="vous@exemple.com" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mot de passe</label>
+        <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="auth-btn btn">Se connecter</button>
+    </form>
+
+    <!-- REGISTER -->
+    <form id="registerForm" class="auth-form" onsubmit="handleRegister(event)">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="regEmail" class="form-input" placeholder="vous@exemple.com" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mot de passe</label>
+        <input type="password" id="regPassword" class="form-input" placeholder="••••••••" required autocomplete="new-password" minlength="8">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirmer le mot de passe</label>
+        <input type="password" id="regConfirm" class="form-input" placeholder="••••••••" required autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Code d'invitation</label>
+        <input type="password" id="regInvite" class="form-input" placeholder="Code d'invitation" required autocomplete="off">
+      </div>
+      <button type="submit" class="auth-btn btn">Créer mon compte</button>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     APP
+══════════════════════════════════════════════ -->
+<div id="app" hidden>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-mark">SCC</div>
+      <div>
+        <div class="sb-logo-text">Social Control</div>
+        <div class="sb-logo-sub">Center</div>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-item active" data-page="dashboard" onclick="navTo('dashboard')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/>
+          <rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/>
+        </svg>
+        Dashboard
+      </div>
+      <div class="sb-item" data-page="brand" onclick="navTo('brand')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="10,2 12.9,7.6 19,8.5 14.5,12.9 15.6,19 10,16 4.4,19 5.5,12.9 1,8.5 7.1,7.6"/>
+        </svg>
+        The Brand
+      </div>
+      <div class="sb-item" data-page="scripts" onclick="navTo('scripts')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 2h8l3 3v13a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M13 2v4h3"/><path d="M7 9h6M7 12h6M7 15h4"/>
+        </svg>
+        Scripts
+      </div>
+      <div class="sb-item" data-page="contenus" onclick="navTo('contenus')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="16" height="16" rx="2"/>
+          <path d="M2 8h16"/><path d="M8 8v10"/>
+          <circle cx="5" cy="5" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+        Contenus
+      </div>
+      <div class="sb-item" data-page="planning" onclick="navTo('planning')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="16" height="15" rx="2"/>
+          <path d="M2 8h16M7 2v2M13 2v2"/>
+          <rect x="5" y="11" width="2" height="2" rx=".5"/><rect x="9" y="11" width="2" height="2" rx=".5"/>
+          <rect x="13" y="11" width="2" height="2" rx=".5"/>
+        </svg>
+        Planning
+      </div>
+      <div class="sb-item" data-page="analytics" onclick="navTo('analytics')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 16l4-5 4 3 4-7 4 2"/>
+          <circle cx="6" cy="11" r="1.5" fill="currentColor" stroke="none"/>
+          <circle cx="10" cy="14" r="1.5" fill="currentColor" stroke="none"/>
+          <circle cx="14" cy="7" r="1.5" fill="currentColor" stroke="none"/>
+          <circle cx="18" cy="9" r="1.5" fill="currentColor" stroke="none"/>
+        </svg>
+        Analytics
+      </div>
+      <div class="sb-sep"></div>
+      <div class="sb-item" data-page="settings" onclick="navTo('settings')">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10" cy="10" r="3"/>
+          <path d="M10 2v1.5M10 16.5V18M2 10h1.5M16.5 10H18M4.2 4.2l1.1 1.1M14.7 14.7l1.1 1.1M15.8 4.2l-1.1 1.1M5.3 14.7l-1.1 1.1"/>
+        </svg>
+        Réglages
+      </div>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="sb-avatar" id="sbAvatar">J</div>
+      <div class="sb-user-info">
+        <div class="sb-user-email" id="sbEmail">—</div>
+      </div>
+      <button class="sb-logout" onclick="handleLogout()" title="Déconnexion">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13 14l4-4-4-4M17 10H8"/><path d="M8 3H4a1 1 0 00-1 1v12a1 1 0 001 1h4"/>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      <div class="topbar-search">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="9" cy="9" r="6"/><path d="M16 16l-3.5-3.5"/>
+        </svg>
+        <input type="text" id="globalSearch" placeholder="Rechercher…" oninput="handleSearch(this.value)">
+      </div>
+      <button class="btn btn-primary" onclick="openPipelineModal()">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>
+        + Pipeline
+      </button>
+    </div>
+
+    <!-- PAGES -->
+    <div class="pages">
+
+      <!-- ═══════════════════════════════
+           PAGE: DASHBOARD
+      ═══════════════════════════════ -->
+      <div class="page active" id="pageDashboard">
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">Vue d'ensemble du pipeline de production</div>
+
+        <!-- Agent canvas -->
+        <div class="canvas-wrap">
+          <canvas id="agentCanvas"></canvas>
+        </div>
+
+        <!-- Pipeline status bar -->
+        <div class="pipeline-bar" id="pipelineBar">
+          <div class="pipe-node idle" id="pnode-manager">
+            <div class="pipe-dot">MGR</div>
+            <div class="pipe-label">Manager</div>
+          </div>
+          <div class="pipe-node idle" id="pnode-marketing">
+            <div class="pipe-dot">MKT</div>
+            <div class="pipe-label">Marketing</div>
+          </div>
+          <div class="pipe-node idle" id="pnode-scripter">
+            <div class="pipe-dot">SCR</div>
+            <div class="pipe-label">Scripter</div>
+          </div>
+          <div class="pipe-node idle" id="pnode-design">
+            <div class="pipe-dot">DSN</div>
+            <div class="pipe-label">Design</div>
+          </div>
+          <div class="pipe-node idle" id="pnode-control">
+            <div class="pipe-dot">CTL</div>
+            <div class="pipe-label">Contrôle</div>
+          </div>
+          <div class="pipe-node idle" id="pnode-monteur">
+            <div class="pipe-dot">MNT</div>
+            <div class="pipe-label">Monteur</div>
+          </div>
+          <div class="pipe-node idle" id="pnode-planner">
+            <div class="pipe-dot">PLN</div>
+            <div class="pipe-label">Planner</div>
+          </div>
+        </div>
+
+        <!-- KPI Grid -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 2h8l3 3v13a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1z"/></svg>
+              Scripts totaux
+            </div>
+            <div class="kpi-value" id="kpiScripts">0</div>
+            <div class="kpi-delta" id="kpiScriptsDelta">Cette semaine</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="16" height="16" rx="2"/><path d="M2 8h16M8 8v10"/></svg>
+              Contenus générés
+            </div>
+            <div class="kpi-value" id="kpiContenus">0</div>
+            <div class="kpi-delta" id="kpiContenusDelta">Vidéos produites</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 2l2.4 5h5.1l-4.1 3.1 1.6 5-5-3.3-5 3.3 1.6-5L2.5 7h5.1z"/></svg>
+              Publications
+            </div>
+            <div class="kpi-value" id="kpiPubs">0</div>
+            <div class="kpi-delta" id="kpiPubsDelta">Planifiées</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="10" r="8"/><path d="M10 6v4l3 2"/></svg>
+              Coût Claude
+            </div>
+            <div class="kpi-value" id="kpiCost">$0.00</div>
+            <div class="kpi-delta" id="kpiCostDelta">Ce mois</div>
+          </div>
+        </div>
+
+        <!-- Dashboard 2-col: feed + launch -->
+        <div class="dash-grid">
+          <!-- Live feed -->
+          <div class="feed">
+            <div class="feed-header">
+              <div class="feed-dot"></div>
+              Flux en direct
+            </div>
+            <div class="feed-body" id="liveFeed">
+              <div class="empty-state" style="padding:30px 10px">
+                <div class="empty-state-icon">🤖</div>
+                <div class="empty-state-sub">Démarrez un pipeline pour voir l'activité</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Launch card -->
+          <div class="launch-card">
+            <div class="card-title">🚀 Nouveau contenu</div>
+            <div class="form-group">
+              <label class="form-label">Idée / Brief</label>
+              <textarea id="launchIdea" class="form-textarea" rows="3" placeholder="Décrivez votre idée de contenu ici…"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Plateformes</label>
+              <div class="platform-checks">
+                <input type="checkbox" class="platform-check" id="plt-tiktok" value="tiktok">
+                <label for="plt-tiktok" class="platform-label">🎵 TikTok</label>
+                <input type="checkbox" class="platform-check" id="plt-ig-reels" value="ig_reels">
+                <label for="plt-ig-reels" class="platform-label">🎬 IG Reels</label>
+                <input type="checkbox" class="platform-check" id="plt-instagram" value="instagram">
+                <label for="plt-instagram" class="platform-label">📸 Instagram</label>
+                <input type="checkbox" class="platform-check" id="plt-facebook" value="facebook">
+                <label for="plt-facebook" class="platform-label">👥 Facebook</label>
+                <input type="checkbox" class="platform-check" id="plt-youtube" value="youtube">
+                <label for="plt-youtube" class="platform-label">📺 YouTube</label>
+                <input type="checkbox" class="platform-check" id="plt-pinterest" value="pinterest">
+                <label for="plt-pinterest" class="platform-label">📌 Pinterest</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Format</label>
+              <select id="launchType" class="form-select">
+                <option value="video">Vidéo (vertical 9:16)</option>
+                <option value="carousel">Carousel</option>
+                <option value="pinterest">Pinterest</option>
+              </select>
+            </div>
+            <button class="btn btn-primary w-full btn-lg" onclick="launchPipeline()" id="launchBtn">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l12 6-12 6V4z"/></svg>
+              Lancer le pipeline
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════
+           PAGE: THE BRAND
+      ═══════════════════════════════ -->
+      <div class="page" id="pageBrand">
+        <div class="page-title">The Brand</div>
+        <div class="page-sub">Définissez l'identité et la stratégie de votre marque</div>
+
+        <div class="brand-form">
+          <!-- Identity section -->
+          <div class="card" style="margin-bottom:16px">
+            <div class="form-section-title">Identité de marque</div>
+            <div class="form-group">
+              <label class="form-label">Nom de la marque</label>
+              <input type="text" id="brandName" class="form-input" placeholder="Ex: Mon Entreprise">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea id="brandDescription" class="form-textarea" rows="3" placeholder="Décrivez votre marque en quelques phrases…"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Audience cible</label>
+              <textarea id="brandAudience" class="form-textarea" rows="2" placeholder="Qui est votre audience ? (âge, intérêts, géographie…)"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ton &amp; voix</label>
+              <input type="text" id="brandTone" class="form-input" placeholder="Ex: Professionnel, inspirant, humoristique, bienveillant…">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Langue principale</label>
+              <select id="brandLang" class="form-select">
+                <option value="fr">Français</option>
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="de">Deutsch</option>
+                <option value="pt">Português</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Do / Don't -->
+          <div class="card" style="margin-bottom:16px">
+            <div class="form-section-title">Consignes éditoriales</div>
+            <div class="form-group">
+              <label class="form-label">À faire — thèmes &amp; mots-clés</label>
+              <div class="tag-input-wrap" id="doTagWrap" onclick="focusTagInput('doTagInput')">
+                <input type="text" id="doTagInput" class="tag-input-inner" placeholder="Ajoutez un thème et appuyez Entrée…" onkeydown="handleTagInput(event,'do')">
+              </div>
+              <div class="form-hint">Appuyez sur Entrée ou virgule pour ajouter</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">À éviter — sujets &amp; formulations</label>
+              <div class="tag-input-wrap" id="dontTagWrap" onclick="focusTagInput('dontTagInput')">
+                <input type="text" id="dontTagInput" class="tag-input-inner" placeholder="Ajoutez un sujet à éviter et appuyez Entrée…" onkeydown="handleTagInput(event,'dont')">
+              </div>
+            </div>
+          </div>
+
+          <!-- Visual identity -->
+          <div class="card" style="margin-bottom:16px">
+            <div class="form-section-title">Identité visuelle</div>
+            <div class="form-group">
+              <label class="form-label">Palette de couleurs</label>
+              <div class="color-swatches" id="colorSwatches">
+                <div class="color-add" onclick="addColorSwatch()" title="Ajouter une couleur">+</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">URL du logo</label>
+              <input type="url" id="brandLogoUrl" class="form-input" placeholder="https://…">
+              <div class="form-hint">Lien direct vers votre logo (PNG, SVG recommandé)</div>
+            </div>
+          </div>
+
+          <!-- Strategy -->
+          <div class="card" style="margin-bottom:24px">
+            <div class="form-section-title">Stratégie de publication</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Posts par jour</label>
+                <input type="number" id="brandDailyPosts" class="form-input" placeholder="3" min="1" max="20" value="3">
+              </div>
+              <div class="form-group">
+                <!-- spacer -->
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Fenêtre de publication — début</label>
+                <input type="time" id="brandWindowStart" class="form-input" value="09:00">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Fenêtre de publication — fin</label>
+                <input type="time" id="brandWindowEnd" class="form-input" value="20:00">
+              </div>
+            </div>
+          </div>
+
+          <!-- Safe area preview -->
+          <div class="safe-preview-section">
+            <div class="safe-preview-title">Aperçu safe area</div>
+            <div class="safe-preview-sub">Zones de sécurité pour les différents formats (UI overlay exclue)</div>
+            <div class="safe-frames">
+              <!-- 1080×1920 (Stories / Reels / TikTok) — scaled at 0.14 -->
+              <div class="safe-frame-wrap">
+                <div class="safe-frame" style="width:151px;height:269px">
+                  <div class="safe-frame-inner" style="background:var(--bg2)"></div>
+                  <div class="safe-area-overlay" style="inset:30px 14px;border-radius:4px"></div>
+                </div>
+                <div class="safe-frame-label">Stories / Reels</div>
+                <div class="safe-frame-dims">1080 × 1920</div>
+              </div>
+              <!-- 1080×1350 (Instagram portrait) — scaled at 0.155 -->
+              <div class="safe-frame-wrap">
+                <div class="safe-frame" style="width:167px;height:209px">
+                  <div class="safe-frame-inner" style="background:var(--bg2)"></div>
+                  <div class="safe-area-overlay" style="inset:22px 16px;border-radius:4px"></div>
+                </div>
+                <div class="safe-frame-label">Instagram portrait</div>
+                <div class="safe-frame-dims">1080 × 1350</div>
+              </div>
+              <!-- 1920×1080 (YouTube / landscape) — scaled at 0.16 -->
+              <div class="safe-frame-wrap">
+                <div class="safe-frame" style="width:307px;height:173px">
+                  <div class="safe-frame-inner" style="background:var(--bg2)"></div>
+                  <div class="safe-area-overlay" style="inset:18px 28px;border-radius:4px"></div>
+                </div>
+                <div class="safe-frame-label">YouTube / Paysage</div>
+                <div class="safe-frame-dims">1920 × 1080</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:24px">
+            <button class="btn btn-primary btn-lg" onclick="saveBrand()">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12l4 4 8-8"/></svg>
+              Sauvegarder la marque
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════
+           PAGE: SCRIPTS
+      ═══════════════════════════════ -->
+      <div class="page" id="pageScripts">
+        <div class="page-title">Scripts</div>
+        <div class="page-sub">Scripts générés par les agents IA</div>
+
+        <div class="filter-bar">
+          <select class="form-select" id="scriptsStateFilter" onchange="filterScripts()">
+            <option value="">Tous les états</option>
+            <option value="draft">Brouillon</option>
+            <option value="pending">En attente</option>
+            <option value="approved">Approuvé</option>
+            <option value="rejected">Rejeté</option>
+          </select>
+          <select class="form-select" id="scriptsTypeFilter" onchange="filterScripts()">
+            <option value="">Tous les types</option>
+            <option value="video">Vidéo</option>
+            <option value="carousel">Carousel</option>
+            <option value="pinterest">Pinterest</option>
+          </select>
+          <input type="text" class="form-input" id="scriptsSearch" placeholder="Rechercher un script…" oninput="filterScripts()">
+          <div class="filter-bar-spacer"></div>
+          <button class="btn btn-secondary btn-sm" onclick="exportScripts()">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 3v10M6 9l4 4 4-4M4 17h12"/></svg>
+            Exporter
+          </button>
+        </div>
+
+        <div id="scriptsList">
+          <div class="empty-state">
+            <div class="empty-state-icon">📝</div>
+            <div class="empty-state-title">Aucun script</div>
+            <div class="empty-state-sub">Lancez un pipeline pour générer vos premiers scripts</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════
+           PAGE: CONTENUS
+      ═══════════════════════════════ -->
+      <div class="page" id="pageContenus">
+        <div class="page-title">Contenus</div>
+        <div class="page-sub">Vidéos et visuels générés par le Monteur</div>
+
+        <div class="tabs">
+          <div class="tab-btn active" onclick="switchContenuTab('planifier', this)">À planifier</div>
+          <div class="tab-btn" onclick="switchContenuTab('publies', this)">Publiés</div>
+        </div>
+
+        <div class="tab-panel active" id="tabPlanifier">
+          <div id="contenuGridPlanifier" class="content-grid">
+            <div class="empty-state" style="grid-column:1/-1">
+              <div class="empty-state-icon">🎬</div>
+              <div class="empty-state-title">Aucun contenu à planifier</div>
+              <div class="empty-state-sub">Les contenus approuvés apparaîtront ici</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tabPublies">
+          <div id="contenuGridPublies" class="content-grid">
+            <div class="empty-state" style="grid-column:1/-1">
+              <div class="empty-state-icon">✅</div>
+              <div class="empty-state-title">Aucune publication</div>
+              <div class="empty-state-sub">Vos contenus publiés apparaîtront ici</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════
+           PAGE: PLANNING
+      ═══════════════════════════════ -->
+      <div class="page" id="pagePlanning">
+        <div class="page-title">Planning</div>
+        <div class="page-sub">Calendrier de publication sur toutes les plateformes</div>
+
+        <div class="filter-bar">
+          <select class="form-select" id="planningPlatform" onchange="filterPlanning()">
+            <option value="">Toutes les plateformes</option>
+            <option value="tiktok">🎵 TikTok</option>
+            <option value="ig_reels">🎬 IG Reels</option>
+            <option value="instagram">📸 Instagram</option>
+            <option value="facebook">👥 Facebook</option>
+            <option value="youtube">📺 YouTube</option>
+            <option value="pinterest">📌 Pinterest</option>
+          </select>
+          <select class="form-select" id="planningStatus" onchange="filterPlanning()">
+            <option value="">Tous les statuts</option>
+            <option value="scheduled">Planifié</option>
+            <option value="published">Publié</option>
+            <option value="failed">Échoué</option>
+          </select>
+          <input type="date" class="form-input" id="planningDate" onchange="filterPlanning()" style="width:auto">
+          <div class="filter-bar-spacer"></div>
+          <button class="btn btn-primary btn-sm" onclick="schedulePub()">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>
+            Planifier
+          </button>
+        </div>
+
+        <div id="pubList">
+          <div class="empty-state">
+            <div class="empty-state-icon">📅</div>
+            <div class="empty-state-title">Aucune publication planifiée</div>
+            <div class="empty-state-sub">Planifiez vos contenus depuis l'onglet Contenus</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════
+           PAGE: ANALYTICS
+      ═══════════════════════════════ -->
+      <div class="page" id="pageAnalytics">
+        <div class="page-title">Analytics</div>
+        <div class="page-sub">Performance et coûts du pipeline</div>
+
+        <!-- KPI row -->
+        <div class="kpi-grid" style="margin-bottom:20px">
+          <div class="kpi-card">
+            <div class="kpi-label">Total vues</div>
+            <div class="kpi-value" id="aKpiViews">0</div>
+            <div class="kpi-delta">Toutes plateformes</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Taux engagement</div>
+            <div class="kpi-value" id="aKpiEng">0%</div>
+            <div class="kpi-delta">Moyenne</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Coût total IA</div>
+            <div class="kpi-value" id="aKpiCostTotal">$0.00</div>
+            <div class="kpi-delta">Depuis le début</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Runs pipeline</div>
+            <div class="kpi-value" id="aKpiRuns">0</div>
+            <div class="kpi-delta">Exécutions</div>
+          </div>
+        </div>
+
+        <div class="analytics-grid">
+          <!-- Views by platform -->
+          <div class="chart-card">
+            <div class="chart-title">Vues par plateforme</div>
+            <div class="bar-group" id="viewsByPlatform">
+              <div class="bar-row">
+                <div class="bar-label">🎵 TikTok</div>
+                <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
+                <div class="bar-val">0</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">🎬 IG Reels</div>
+                <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
+                <div class="bar-val">0</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">📸 Instagram</div>
+                <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
+                <div class="bar-val">0</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">👥 Facebook</div>
+                <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
+                <div class="bar-val">0</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">📺 YouTube</div>
+                <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
+                <div class="bar-val">0</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">📌 Pinterest</div>
+                <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
+                <div class="bar-val">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cost per agent -->
+          <div class="chart-card">
+            <div class="chart-title">Coût par agent</div>
+            <div class="bar-group" id="costByAgent">
+              <div class="bar-row">
+                <div class="bar-label">Manager</div>
+                <div class="bar-track"><div class="bar-fill" style="width:0%;background:linear-gradient(90deg,#6366F1,#818CF8)"></div></div>
+                <div class="bar-val">$0.00</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">Marketing</div>
+                <div class="bar-track"><div class="bar-fill" style="width:0%;background:linear-gradient(90deg,#F97316,#FB923C)"></div></div>
+                <div class="bar-val">$0.00</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">Scripter</div>
+                <div class="bar-track"><div class="bar-fill" style="width:0%"></div></div>
+                <div class="bar-val">$0.00</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">Design</div>
+                <div class="bar-track"><div class="bar-fill" style="width:0%;background:linear-gradient(90deg,var(--cta2),#C084FC)"></div></div>
+                <div class="bar-val">$0.00</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">Contrôle</div>
+                <div class="bar-track"><div class="bar-fill" style="width:0%;background:linear-gradient(90deg,var(--ok),#4ADE80)"></div></div>
+                <div class="bar-val">$0.00</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">Monteur</div>
+                <div class="bar-track"><div class="bar-fill" style="width:0%;background:linear-gradient(90deg,var(--warn),#FCD34D)"></div></div>
+                <div class="bar-val">$0.00</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">Planner</div>
+                <div class="bar-track"><div class="bar-fill" style="width:0%;background:linear-gradient(90deg,var(--err),#FB7185)"></div></div>
+                <div class="bar-val">$0.00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agent runs viewer -->
+        <div class="section-title">Historique des runs</div>
+        <div id="agentRunList" class="agent-run-list">
+          <div class="empty-state">
+            <div class="empty-state-icon">📊</div>
+            <div class="empty-state-title">Aucun run</div>
+            <div class="empty-state-sub">Les exécutions du pipeline apparaîtront ici</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════
+           PAGE: SETTINGS
+      ═══════════════════════════════ -->
+      <div class="page" id="pageSettings">
+        <div class="page-title">Réglages</div>
+        <div class="page-sub">Configuration des APIs, comptes sociaux et publication</div>
+
+        <!-- APIs -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 2a4 4 0 014 4v1h1a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2h1V6a4 4 0 014-4z"/></svg>
+            Clés API
+          </div>
+          <div class="settings-section-sub">Ces clés sont stockées localement et ne transitent jamais vers nos serveurs.</div>
+
+          <div class="api-row">
+            <div class="api-row-label">Anthropic</div>
+            <input type="password" id="apiAnthropic" class="form-input" placeholder="sk-ant-…" autocomplete="off">
+            <button class="btn btn-secondary btn-sm" onclick="saveApiKey('anthropic')">Sauvegarder</button>
+            <a href="https://console.anthropic.com/settings/keys" target="_blank" class="btn btn-ghost btn-sm" title="Ouvrir la console">
+              <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 3h4v4M17 3l-7 7M8 4H4a1 1 0 00-1 1v11a1 1 0 001 1h11a1 1 0 001-1v-4"/></svg>
+            </a>
+          </div>
+          <div class="api-row">
+            <div class="api-row-label">HeyGen</div>
+            <input type="password" id="apiHeygen" class="form-input" placeholder="Votre clé API HeyGen…" autocomplete="off">
+            <button class="btn btn-secondary btn-sm" onclick="saveApiKey('heygen')">Sauvegarder</button>
+            <a href="https://app.heygen.com/settings?nav=API" target="_blank" class="btn btn-ghost btn-sm" title="Ouvrir HeyGen">
+              <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 3h4v4M17 3l-7 7M8 4H4a1 1 0 00-1 1v11a1 1 0 001 1h11a1 1 0 001-1v-4"/></svg>
+            </a>
+          </div>
+          <div class="api-row">
+            <div class="api-row-label">WoopSocial</div>
+            <input type="password" id="apiWoopsocial" class="form-input" placeholder="Votre clé API WoopSocial…" autocomplete="off">
+            <button class="btn btn-secondary btn-sm" onclick="saveApiKey('woopsocial')">Sauvegarder</button>
+            <a href="https://woopsocial.com/dashboard" target="_blank" class="btn btn-ghost btn-sm" title="Ouvrir WoopSocial">
+              <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 3h4v4M17 3l-7 7M8 4H4a1 1 0 00-1 1v11a1 1 0 001 1h11a1 1 0 001-1v-4"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Social accounts -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="7" r="3"/><path d="M4 17a6 6 0 0112 0"/></svg>
+            Comptes sociaux
+          </div>
+          <div class="settings-section-sub">Tokens d'accès pour la publication automatique.</div>
+
+          <div class="api-row">
+            <div class="api-row-label">📸 Instagram</div>
+            <input type="password" id="tokenIG" class="form-input" placeholder="Token Instagram…" autocomplete="off">
+            <button class="btn btn-secondary btn-sm" onclick="saveSocialToken('instagram')">Sauvegarder</button>
+          </div>
+          <div class="api-row">
+            <div class="api-row-label">👥 Facebook</div>
+            <input type="password" id="tokenFB" class="form-input" placeholder="Token Facebook Page…" autocomplete="off">
+            <button class="btn btn-secondary btn-sm" onclick="saveSocialToken('facebook')">Sauvegarder</button>
+          </div>
+          <div class="api-row">
+            <div class="api-row-label">🎵 TikTok</div>
+            <input type="password" id="tokenTikTok" class="form-input" placeholder="Token TikTok…" autocomplete="off">
+            <button class="btn btn-secondary btn-sm" onclick="saveSocialToken('tiktok')">Sauvegarder</button>
+          </div>
+          <div class="api-row">
+            <div class="api-row-label">📺 YouTube</div>
+            <input type="password" id="tokenYT" class="form-input" placeholder="Token YouTube…" autocomplete="off">
+            <button class="btn btn-secondary btn-sm" onclick="saveSocialToken('youtube')">Sauvegarder</button>
+          </div>
+          <div class="api-row">
+            <div class="api-row-label">📌 Pinterest</div>
+            <input type="password" id="tokenPinterest" class="form-input" placeholder="Token Pinterest…" autocomplete="off">
+            <button class="btn btn-secondary btn-sm" onclick="saveSocialToken('pinterest')">Sauvegarder</button>
+          </div>
+        </div>
+
+        <!-- Publishing config -->
+        <div class="settings-section">
+          <div class="settings-section-title">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="3" width="16" height="15" rx="2"/><path d="M2 8h16M7 2v2M13 2v2"/></svg>
+            Publication automatique
+          </div>
+          <div class="settings-section-sub">Paramètres de la fenêtre de publication et du planificateur.</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Délai minimum entre publications (min)</label>
+              <input type="number" id="pubMinDelay" class="form-input" value="60" min="15" max="1440">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Posts max par jour</label>
+              <input type="number" id="pubMaxDaily" class="form-input" value="3" min="1" max="20">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Fenêtre — début</label>
+              <input type="time" id="pubWindowStart" class="form-input" value="09:00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fenêtre — fin</label>
+              <input type="time" id="pubWindowEnd" class="form-input" value="20:00">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fuseau horaire</label>
+            <select id="pubTimezone" class="form-select">
+              <option value="Europe/Paris">Europe/Paris (UTC+1/+2)</option>
+              <option value="America/New_York">America/New_York (UTC-5/-4)</option>
+              <option value="America/Los_Angeles">America/Los_Angeles (UTC-8/-7)</option>
+              <option value="Asia/Tokyo">Asia/Tokyo (UTC+9)</option>
+              <option value="UTC">UTC</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="savePubConfig()">Sauvegarder la configuration</button>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="settings-section danger-zone">
+          <div class="settings-section-title">Zone de danger</div>
+          <div class="settings-section-sub">Ces actions sont irréversibles. Procédez avec précaution.</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-danger" onclick="clearAllData()">Effacer toutes les données</button>
+            <button class="btn btn-danger" onclick="resetPipeline()">Réinitialiser le pipeline</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.pages -->
+  </div><!-- /.main -->
+</div><!-- /#app -->
+
+<!-- ══════════════════════════════════════════════
+     MODAL: ONBOARDING
+══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="onboardingModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>🎉 Bienvenue dans Social Control Center</h2>
+      <button class="modal-close" onclick="closeModal('onboardingModal')">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l12 12M16 4L4 16"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="onboardingProgress" style="width:0%"></div>
+      </div>
+      <p style="font-size:14px;color:var(--text2);margin-bottom:20px">Complétez ces étapes pour démarrer votre pipeline de production.</p>
+
+      <div class="onboarding-step" id="ostep-brand">
+        <div class="step-icon" id="ostep-brand-icon">🌟</div>
+        <div class="step-body">
+          <div class="step-title">Configurer votre marque</div>
+          <div class="step-sub">Nom, description, audience, ton &amp; identité visuelle</div>
+        </div>
+        <div class="step-check" id="ostep-brand-check">⬜</div>
+        <button class="btn btn-secondary btn-sm" onclick="navTo('brand');closeModal('onboardingModal')">Configurer</button>
+      </div>
+
+      <div class="onboarding-step" id="ostep-anthropic">
+        <div class="step-icon" id="ostep-anthropic-icon">🤖</div>
+        <div class="step-body">
+          <div class="step-title">Ajouter votre clé Anthropic</div>
+          <div class="step-sub">Nécessaire pour tous les agents IA</div>
+        </div>
+        <div class="step-check" id="ostep-anthropic-check">⬜</div>
+        <button class="btn btn-secondary btn-sm" onclick="navTo('settings');closeModal('onboardingModal')">Configurer</button>
+      </div>
+
+      <div class="onboarding-step" id="ostep-heygen">
+        <div class="step-icon" id="ostep-heygen-icon">🎥</div>
+        <div class="step-body">
+          <div class="step-title">Connecter HeyGen</div>
+          <div class="step-sub">Pour la génération automatique de vidéos</div>
+        </div>
+        <div class="step-check" id="ostep-heygen-check">⬜</div>
+        <button class="btn btn-secondary btn-sm" onclick="navTo('settings');closeModal('onboardingModal')">Configurer</button>
+      </div>
+
+      <div class="onboarding-step" id="ostep-social">
+        <div class="step-icon" id="ostep-social-icon">📱</div>
+        <div class="step-body">
+          <div class="step-title">Connecter un compte social</div>
+          <div class="step-sub">TikTok, Instagram, YouTube, Facebook ou Pinterest</div>
+        </div>
+        <div class="step-check" id="ostep-social-check">⬜</div>
+        <button class="btn btn-secondary btn-sm" onclick="navTo('settings');closeModal('onboardingModal')">Configurer</button>
+      </div>
+
+      <div class="onboarding-step" id="ostep-pipeline">
+        <div class="step-icon" id="ostep-pipeline-icon">🚀</div>
+        <div class="step-body">
+          <div class="step-title">Lancer votre premier pipeline</div>
+          <div class="step-sub">Testez les 7 agents sur une idée de contenu</div>
+        </div>
+        <div class="step-check" id="ostep-pipeline-check">⬜</div>
+        <button class="btn btn-primary btn-sm" onclick="closeModal('onboardingModal');document.getElementById('launchIdea').focus()">Lancer</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('onboardingModal')">Ignorer pour l'instant</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MODAL: AGENT RESPONSE (markdown viewer)
+══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="agentModal">
+  <div class="modal modal-xl">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        <div id="agentModalIcon" style="font-size:22px">🤖</div>
+        <div>
+          <h2 id="agentModalTitle">Réponse agent</h2>
+          <div style="font-size:12px;color:var(--text3)" id="agentModalMeta"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary btn-sm" onclick="copyAgentResponse()">
+          <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M3 13V4a1 1 0 011-1h9"/></svg>
+          Copier
+        </button>
+        <button class="modal-close" onclick="closeModal('agentModal')">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l12 12M16 4L4 16"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div id="agentModalContent" class="md-viewer"></div>
+    </div>
+    <div class="modal-footer">
+      <div id="agentModalCost" style="flex:1;font-size:13px;color:var(--text3)"></div>
+      <button class="btn btn-ghost" onclick="closeModal('agentModal')">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MODAL: PIPELINE RUN
+══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="pipelineModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h2>🔄 Exécution du pipeline</h2>
+      <button class="modal-close" onclick="closeModal('pipelineModal')">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l12 12M16 4L4 16"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div id="pipelineModalStatus" style="font-size:14px;color:var(--text2);margin-bottom:16px;display:flex;align-items:center;gap:10px">
+        <span class="spinner" id="pipelineSpinner"></span>
+        <span id="pipelineStatusText">Démarrage…</span>
+      </div>
+
+      <!-- Agents progress list -->
+      <div id="pipelineAgentList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+        <div class="pipeline-agent-row" id="prow-manager">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:34px;height:34px;border-radius:9px;background:#EEF2FF;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#6366F1;flex-shrink:0">M</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--title)">Manager</div>
+              <div style="font-size:12px;color:var(--text3)" id="prow-manager-status">En attente</div>
+            </div>
+            <div style="flex:1"></div>
+            <span id="prow-manager-badge" class="badge badge-neutral">idle</span>
+          </div>
+        </div>
+        <div class="pipeline-agent-row" id="prow-marketing">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:34px;height:34px;border-radius:9px;background:#FFF7ED;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#F97316;flex-shrink:0">MK</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--title)">Marketing</div>
+              <div style="font-size:12px;color:var(--text3)" id="prow-marketing-status">En attente</div>
+            </div>
+            <div style="flex:1"></div>
+            <span id="prow-marketing-badge" class="badge badge-neutral">idle</span>
+          </div>
+        </div>
+        <div class="pipeline-agent-row" id="prow-scripter">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:34px;height:34px;border-radius:9px;background:var(--bg-info);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--info);flex-shrink:0">SC</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--title)">Scripter</div>
+              <div style="font-size:12px;color:var(--text3)" id="prow-scripter-status">En attente</div>
+            </div>
+            <div style="flex:1"></div>
+            <span id="prow-scripter-badge" class="badge badge-neutral">idle</span>
+          </div>
+        </div>
+        <div class="pipeline-agent-row" id="prow-design">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:34px;height:34px;border-radius:9px;background:#F3EEFF;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--cta2);flex-shrink:0">DS</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--title)">Design</div>
+              <div style="font-size:12px;color:var(--text3)" id="prow-design-status">En attente</div>
+            </div>
+            <div style="flex:1"></div>
+            <span id="prow-design-badge" class="badge badge-neutral">idle</span>
+          </div>
+        </div>
+        <div class="pipeline-agent-row" id="prow-control">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:34px;height:34px;border-radius:9px;background:var(--bg-ok);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--ok);flex-shrink:0">CT</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--title)">Contrôle qualité</div>
+              <div style="font-size:12px;color:var(--text3)" id="prow-control-status">En attente</div>
+            </div>
+            <div style="flex:1"></div>
+            <span id="prow-control-badge" class="badge badge-neutral">idle</span>
+          </div>
+        </div>
+        <div class="pipeline-agent-row" id="prow-monteur">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:34px;height:34px;border-radius:9px;background:#FEF9EE;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--warn);flex-shrink:0">MN</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--title)">Monteur</div>
+              <div style="font-size:12px;color:var(--text3)" id="prow-monteur-status">En attente</div>
+            </div>
+            <div style="flex:1"></div>
+            <span id="prow-monteur-badge" class="badge badge-neutral">idle</span>
+          </div>
+        </div>
+        <div class="pipeline-agent-row" id="prow-planner">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:34px;height:34px;border-radius:9px;background:#FFF0F3;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--err);flex-shrink:0">PL</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--title)">Planner</div>
+              <div style="font-size:12px;color:var(--text3)" id="prow-planner-status">En attente</div>
+            </div>
+            <div style="flex:1"></div>
+            <span id="prow-planner-badge" class="badge badge-neutral">idle</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live output preview -->
+      <div style="background:var(--bg2);border-radius:var(--radius-sm);border:1px solid var(--border);padding:12px 14px;max-height:160px;overflow-y:auto;font-size:13px;color:var(--text2);font-family:'JetBrains Mono',monospace;line-height:1.6" id="pipelineOutputPreview">
+        Démarrage du pipeline…
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div style="flex:1;font-size:13px;color:var(--text3)" id="pipelineTotalCost"></div>
+      <button class="btn btn-danger btn-sm" id="pipelineStopBtn" onclick="stopPipeline()">Arrêter</button>
+      <button class="btn btn-primary" id="pipelineCloseBtn" onclick="closeModal('pipelineModal')" style="display:none">Terminer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MODAL: SCRIPT EDITOR
+══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="scriptModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h2 id="scriptModalTitle">Éditer le script</h2>
+      <button class="modal-close" onclick="closeModal('scriptModal')">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l12 12M16 4L4 16"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+        <span id="scriptModalBadge" class="badge badge-neutral">draft</span>
+        <span id="scriptModalType" class="badge badge-info">vidéo</span>
+        <span id="scriptModalPlatforms" style="font-size:13px;color:var(--text3)"></span>
+        <div style="flex:1"></div>
+        <span id="scriptModalDate" style="font-size:12px;color:var(--text3)"></span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Contenu du script</label>
+        <textarea id="scriptModalContent" class="form-textarea" rows="16" style="font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Visuels / Assets</label>
+        <div style="border:2px dashed var(--border);border-radius:var(--radius-sm);padding:24px;text-align:center;cursor:pointer;transition:var(--transition)" id="scriptDropzone" onclick="document.getElementById('scriptImageInput').click()" ondragover="handleDragOver(event)" ondrop="handleDrop(event,'script')">
+          <div style="font-size:28px;margin-bottom:8px">🖼️</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text2)">Déposez des images ou cliquez</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:4px">PNG, JPG, GIF, WebP — max 10 Mo</div>
+          <input type="file" id="scriptImageInput" accept="image/*" multiple style="display:none" onchange="handleScriptImages(event)">
+        </div>
+        <div id="scriptImagePreviews" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Note de contrôle qualité</label>
+        <textarea id="scriptModalNote" class="form-textarea" rows="3" placeholder="Ajoutez une note pour l'équipe ou pour le prochain agent…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" onclick="rejectScript()">Rejeter</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost" onclick="closeModal('scriptModal')">Annuler</button>
+      <button class="btn btn-secondary" onclick="saveScriptDraft()">Sauvegarder brouillon</button>
+      <button class="btn btn-primary" onclick="approveScript()">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10l5 5 7-8"/></svg>
+        Approuver
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     TOAST CONTAINER
+══════════════════════════════════════════════ -->
+<div id="toastContainer"></div>
+
+<script>
+'use strict';
+const BASE = window.location.origin;
+let TOKEN = localStorage.getItem('scc_token') || '';
+let ME = null;
+let CURRENT_PAGE = 'dashboard';
+let CANVAS_TICK = 0;
+let PIPELINE_ACTIVE = false;
+let AGENT_STATES = { manager:'idle', marketing:'idle', scripter:'idle', design:'idle', control:'idle', monteur:'idle', planner:'idle' };
+let ACTIVE_CONN = null; // {from, to}
+
+const AGENT_DEFS = {
+  manager:  { key:'manager',  label:'MANAGER',  title:'Zeus',        role:'Orchestre le pipeline',          color:'#69ADFF', glow:'rgba(105,173,255,.6)', phaseOffset:0.0 },
+  marketing:{ key:'marketing',label:'MARKETING', title:'Sofia',       role:'Stratégie & messages clés',      color:'#F18AB5', glow:'rgba(241,138,181,.6)', phaseOffset:0.9 },
+  scripter: { key:'scripter', label:'SCRIPTER',  title:'Hugo',        role:'Rédige les scripts',             color:'#9F7FE0', glow:'rgba(159,127,224,.6)', phaseOffset:1.8 },
+  design:   { key:'design',   label:'DESIGN',    title:'Léa',         role:'Direction artistique',           color:'#00BACC', glow:'rgba(0,186,204,.6)',   phaseOffset:2.7 },
+  control:  { key:'control',  label:'CONTROL',   title:'Eve-7',       role:'Cohérence de marque',            color:'#FFB830', glow:'rgba(255,184,48,.6)',  phaseOffset:1.2 },
+  monteur:  { key:'monteur',  label:'MONTEUR',   title:'Max',         role:'Production vidéo',               color:'#FF8A65', glow:'rgba(255,138,101,.6)', phaseOffset:2.1 },
+  planner:  { key:'planner',  label:'PLANNER',   title:'Nina',        role:'Planning publication',           color:'#A8C8FF', glow:'rgba(168,200,255,.6)', phaseOffset:3.0 },
+};
+const AGENT_ORDER = ['manager','marketing','scripter','design','control','monteur','planner'];
+const PIPELINE_CONNS = [
+  ['manager','marketing'],['manager','control'],
+  ['marketing','scripter'],['scripter','design'],
+  ['design','control'],['control','monteur'],['monteur','planner']
+];
+
+const SPRITES = {
+  manager: {
+    pal: ['','#1A3A5C','#E8C94B','#FDBCB4','#FFFFFF','#333333','#B8B8C0'],
+    d: [
+      [0,0,0,2,2,2,2,2,0,0],
+      [0,0,2,2,2,2,2,2,2,0],
+      [0,4,4,4,4,4,4,4,4,0],
+      [4,4,4,3,3,3,3,4,4,4],
+      [4,4,3,3,3,3,3,3,4,4],
+      [0,4,3,5,3,3,5,3,4,0],
+      [0,4,3,3,3,3,3,3,4,0],
+      [0,4,6,6,3,3,6,6,4,0],
+      [0,1,4,2,4,4,2,4,1,0],
+      [0,1,1,4,4,4,4,1,1,0],
+      [0,1,1,1,4,4,1,1,1,0],
+      [0,1,2,1,1,1,1,1,2,0],
+      [0,1,1,1,1,1,1,1,1,0],
+      [0,1,1,0,0,0,0,1,1,0],
+      [0,1,1,0,0,0,0,1,1,0],
+      [0,5,5,0,0,0,0,5,5,0],
+    ]
+  },
+  marketing: {
+    pal: ['','#FFD700','#FDBCB4','#C8005A','#FFFFFF','#333333','#FF90B8'],
+    d: [
+      [0,1,1,1,1,1,1,1,1,0],
+      [1,1,1,1,1,1,1,1,1,1],
+      [1,1,2,2,2,2,2,2,1,1],
+      [0,1,2,2,2,2,2,2,1,0],
+      [0,1,2,5,2,2,5,2,1,0],
+      [0,1,2,2,2,2,2,2,1,0],
+      [0,1,2,6,3,3,6,2,1,0],
+      [0,1,2,2,4,4,2,2,1,0],
+      [0,3,3,3,3,3,3,3,3,0],
+      [0,3,4,3,3,3,3,4,3,0],
+      [0,3,3,3,3,3,3,3,3,0],
+      [0,3,3,3,3,3,3,3,3,0],
+      [0,3,3,4,3,3,4,3,3,0],
+      [0,0,5,5,0,0,5,5,0,0],
+      [0,0,5,5,0,0,5,5,0,0],
+      [0,0,5,5,0,0,5,5,0,0],
+    ]
+  },
+  scripter: {
+    pal: ['','#3D1C02','#FDBCB4','#1A4A2E','#FFFFFF','#333333','#C8A878'],
+    d: [
+      [0,0,1,1,1,1,1,1,0,0],
+      [0,1,1,1,1,1,1,1,1,0],
+      [0,1,6,6,6,6,6,6,1,0],
+      [0,1,2,2,2,2,2,2,1,0],
+      [0,0,2,6,2,2,6,2,0,0],
+      [0,0,2,2,2,2,2,2,0,0],
+      [0,0,2,2,5,5,2,2,0,0],
+      [0,0,2,2,2,2,2,2,0,0],
+      [0,3,3,4,4,4,4,3,3,0],
+      [0,3,3,4,4,4,4,3,3,0],
+      [0,3,3,3,4,4,3,3,3,0],
+      [0,3,5,3,4,4,3,3,5,0],
+      [0,3,3,3,3,3,3,3,3,0],
+      [0,0,1,1,0,0,1,1,0,0],
+      [0,0,1,1,0,0,1,1,0,0],
+      [0,0,5,5,0,0,5,5,0,0],
+    ]
+  },
+  design: {
+    pal: ['','#8800CC','#FDBCB4','#009898','#FFFFFF','#333333','#FF60A0','#FFD700'],
+    d: [
+      [0,1,1,6,6,6,6,1,1,0],
+      [1,1,6,6,6,6,6,6,1,1],
+      [1,1,2,2,2,2,2,2,1,1],
+      [0,1,2,7,2,2,7,2,1,0],
+      [0,1,7,5,7,7,5,7,1,0],
+      [0,1,2,7,2,2,7,2,1,0],
+      [0,1,2,2,6,6,2,2,1,0],
+      [0,0,2,2,2,2,2,2,0,0],
+      [0,3,3,6,3,3,6,3,3,0],
+      [0,3,6,3,3,3,3,6,3,0],
+      [0,3,3,3,3,3,3,3,3,0],
+      [0,3,3,6,3,3,6,3,3,0],
+      [0,3,3,3,3,3,3,3,3,0],
+      [0,0,5,5,0,0,5,5,0,0],
+      [0,0,5,5,0,0,5,5,0,0],
+      [0,0,5,5,0,0,5,5,0,0],
+    ]
+  },
+  monteur: {
+    pal: ['','#1A1A2E','#FDBCB4','#CC5500','#FFFFFF','#333333','#808090','#FFAA00'],
+    d: [
+      [0,0,1,1,1,1,1,1,0,0],
+      [0,6,1,2,2,2,2,1,6,0],
+      [0,6,1,2,2,2,2,1,6,0],
+      [0,0,2,2,2,2,2,2,0,0],
+      [0,0,2,5,2,2,5,2,0,0],
+      [0,0,2,2,2,2,2,2,0,0],
+      [0,0,2,2,5,5,2,2,0,0],
+      [0,0,2,2,2,2,2,2,0,0],
+      [0,3,3,3,3,3,3,3,3,0],
+      [0,3,4,3,7,7,3,4,3,0],
+      [0,3,3,7,3,3,7,3,3,0],
+      [0,3,3,3,3,3,3,3,3,0],
+      [0,3,3,4,3,3,4,3,3,0],
+      [0,0,1,1,0,0,1,1,0,0],
+      [0,0,1,1,0,0,1,1,0,0],
+      [0,0,5,5,0,0,5,5,0,0],
+    ]
+  },
+  planner: {
+    pal: ['','#3D1C02','#FDBCB4','#1A5C8A','#FFFFFF','#333333','#FFB830'],
+    d: [
+      [0,0,1,1,1,1,1,1,0,0],
+      [0,1,1,1,1,1,1,1,1,0],
+      [0,1,2,2,2,2,2,2,1,0],
+      [1,1,2,2,2,2,2,2,1,1],
+      [0,1,2,5,2,2,5,2,1,0],
+      [0,1,2,2,2,2,2,2,1,0],
+      [0,1,2,2,6,6,2,2,1,0],
+      [0,0,2,2,2,2,2,2,0,0],
+      [0,3,3,4,4,4,4,3,3,0],
+      [0,3,4,3,3,3,3,4,3,0],
+      [0,3,6,3,3,3,3,6,3,0],
+      [0,3,3,3,3,3,3,3,3,0],
+      [0,3,3,6,3,3,6,3,3,0],
+      [0,0,5,5,0,0,5,5,0,0],
+      [0,0,5,5,0,0,5,5,0,0],
+      [0,0,5,5,0,0,5,5,0,0],
+    ]
+  },
+  control: {
+    pal: ['','#E8EEFF','#69ADFF','#B0C0D8','#FFFFFF','#2B2B46','#A8C8FF'],
+    d: [
+      [0,0,3,1,1,1,1,3,0,0],
+      [0,3,1,1,1,1,1,1,3,0],
+      [3,1,1,2,4,4,2,1,1,3],
+      [3,1,1,2,4,4,2,1,1,3],
+      [3,1,1,2,4,4,2,1,1,3],
+      [3,1,1,2,4,4,2,1,1,3],
+      [0,3,1,1,1,1,1,1,3,0],
+      [0,0,3,1,1,1,1,3,0,0],
+      [0,0,1,1,1,1,1,1,0,0],
+      [0,3,1,3,1,1,3,1,3,0],
+      [0,3,1,1,1,1,1,1,3,0],
+      [0,0,3,1,1,1,1,3,0,0],
+      [0,0,0,3,3,3,3,0,0,0],
+      [0,0,0,3,3,3,3,0,0,0],
+      [0,0,6,6,2,2,6,6,0,0],
+      [0,0,6,2,2,2,2,6,0,0],
+    ]
+  },
+};
+
+// Canvas positions: proportional to canvas size
+function agentPos(key, W, H) {
+  const positions = {
+    manager:  {rx:0.50, ry:0.22},
+    marketing:{rx:0.12, ry:0.72},
+    scripter: {rx:0.28, ry:0.78},
+    design:   {rx:0.50, ry:0.82},
+    control:  {rx:0.50, ry:0.48},
+    monteur:  {rx:0.72, ry:0.78},
+    planner:  {rx:0.88, ry:0.72},
+  };
+  const p = positions[key];
+  return { x: p.rx * W, y: p.ry * H };
+}
+
+// Easing for smooth animation
+function easeInOut(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+
+// Draw a single pixel-art sprite
+function drawSprite(ctx, key, cx, cy, scale, tick) {
+  const sp = SPRITES[key];
+  const ag = AGENT_DEFS[key];
+  const state = AGENT_STATES[key];
+  const W = sp.d[0].length * scale;
+  const H = sp.d.length * scale;
+  const x0 = cx - W/2;
+  const yOff = state === 'active'
+    ? Math.sin(tick * 0.12 + ag.phaseOffset) * 4
+    : Math.sin(tick * 0.03 + ag.phaseOffset) * 2;
+  const y0 = cy - H + yOff;
+
+  // Glow
+  ctx.save();
+  if (state === 'active' || state === 'running') {
+    const intensity = 0.5 + 0.5 * Math.sin(tick * 0.08);
+    ctx.shadowColor = ag.glow;
+    ctx.shadowBlur = 18 + intensity * 12;
+  } else if (state === 'done') {
+    ctx.shadowColor = 'rgba(34,184,106,.5)';
+    ctx.shadowBlur = 14;
+  } else if (state === 'error') {
+    ctx.shadowColor = 'rgba(255,77,109,.5)';
+    ctx.shadowBlur = 14;
+  }
+
+  for (let row = 0; row < sp.d.length; row++) {
+    for (let col = 0; col < sp.d[row].length; col++) {
+      const ci = sp.d[row][col];
+      if (ci === 0) continue;
+      ctx.fillStyle = sp.pal[ci];
+      ctx.fillRect(Math.round(x0 + col * scale), Math.round(y0 + row * scale), scale, scale);
+    }
+  }
+  ctx.restore();
+
+  // Label below
+  const labelY = cy + 6;
+  ctx.save();
+  ctx.font = `bold 10px 'Segoe UI',sans-serif`;
+  ctx.textAlign = 'center';
+  const labelColor = state === 'active' || state === 'running' ? ag.color
+    : state === 'done' ? '#22B86A'
+    : state === 'error' ? '#FF4D6D'
+    : '#9CA3AF';
+  ctx.fillStyle = labelColor;
+  ctx.fillText(ag.label, cx, labelY);
+
+  // State dot
+  if (state !== 'idle') {
+    const dot = state === 'done' ? '#22B86A' : state === 'error' ? '#FF4D6D' : ag.color;
+    ctx.beginPath();
+    ctx.arc(cx + 10, cy - H + yOff - 3, 4, 0, Math.PI*2);
+    ctx.fillStyle = dot;
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawBackground(ctx, W, H) {
+  // Gradient bg
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#EEF4FF');
+  grad.addColorStop(1, '#F5F0FF');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Subtle dot grid
+  ctx.fillStyle = 'rgba(105,173,255,.12)';
+  for (let gx = 20; gx < W; gx += 28) {
+    for (let gy = 20; gy < H; gy += 28) {
+      ctx.beginPath();
+      ctx.arc(gx, gy, 1.5, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+}
+
+function drawConnections(ctx, W, H, tick) {
+  for (const [from, to] of PIPELINE_CONNS) {
+    const pf = agentPos(from, W, H);
+    const pt = agentPos(to, W, H);
+    const sf = AGENT_STATES[from];
+    const st = AGENT_STATES[to];
+    const isActive = (sf === 'active' || sf === 'running') && (st === 'active' || st === 'running' || st === 'idle');
+    const isDone = sf === 'done' && st !== 'error';
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(pf.x, pf.y - 20);
+    ctx.lineTo(pt.x, pt.y - 20);
+
+    if (isActive) {
+      // Animated beam
+      const t = (tick * 0.04) % 1;
+      ctx.strokeStyle = AGENT_DEFS[from].color;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 6]);
+      ctx.lineDashOffset = -tick * 1.2;
+      ctx.globalAlpha = 0.7;
+      ctx.stroke();
+      // Particle on beam
+      const px = pf.x + (pt.x - pf.x) * t;
+      const py = (pf.y - 20) + ((pt.y - 20) - (pf.y - 20)) * t;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.arc(px, py, 3.5, 0, Math.PI*2);
+      ctx.fillStyle = AGENT_DEFS[from].color;
+      ctx.globalAlpha = 0.9;
+      ctx.fill();
+    } else if (isDone) {
+      ctx.strokeStyle = '#22B86A';
+      ctx.lineWidth = 1.5;
+      ctx.globalAlpha = 0.4;
+      ctx.stroke();
+    } else {
+      ctx.strokeStyle = '#BDBDCB';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 5]);
+      ctx.globalAlpha = 0.35;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+let _canvasRaf = null;
+function startCanvas() {
+  const canvas = document.getElementById('agentCanvas');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = 340 * dpr;
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = '340px';
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function frame() {
+    CANVAS_TICK++;
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const W = canvas.width / dpr, H = canvas.height / dpr;
+    drawBackground(ctx, W, H);
+    drawConnections(ctx, W, H, CANVAS_TICK);
+    for (const key of AGENT_ORDER) {
+      const pos = agentPos(key, W, H);
+      drawSprite(ctx, key, pos.x, pos.y, 4, CANVAS_TICK);
+    }
+    _canvasRaf = requestAnimationFrame(frame);
+  }
+  if (_canvasRaf) cancelAnimationFrame(_canvasRaf);
+  frame();
+
+  canvas.addEventListener('click', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const W = rect.width, H = rect.height;
+    for (const key of AGENT_ORDER) {
+      const pos = agentPos(key, W, H);
+      const dx = mx - pos.x, dy = my - (pos.y - 32);
+      if (Math.sqrt(dx*dx + dy*dy) < 28) {
+        openAgentModal(key);
+        return;
+      }
+    }
+  });
+}
+
+function setAgentState(key, state) {
+  AGENT_STATES[key] = state;
+  // Update pipeline bar node
+  const node = document.querySelector(`.pipe-node[data-agent="${key}"]`);
+  if (node) {
+    node.className = 'pipe-node';
+    if (state === 'active' || state === 'running') node.classList.add('active');
+    else if (state === 'done') node.classList.add('done');
+    else if (state === 'error') node.classList.add('error');
+  }
+}
+
+function resetAgentStates() {
+  for (const k of AGENT_ORDER) setAgentState(k, 'idle');
+}
+
+async function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (TOKEN) headers['Authorization'] = 'Bearer ' + TOKEN;
+  const res = await fetch(BASE + path, { ...opts, headers: { ...headers, ...(opts.headers||{}) } });
+  if (res.status === 401) { doLogout(); return null; }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || 'Erreur serveur');
+  return data;
+}
+
+function switchAuthTab(tab) {
+  document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.auth-tab[data-tab="${tab}"]`).classList.add('active');
+  document.getElementById('authError').className = 'auth-error';
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('authError');
+  try {
+    const data = await fetch(BASE + '/api/auth/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, password })
+    }).then(r => r.ok ? r.json() : r.json().then(e => { throw new Error(e.detail); }));
+    TOKEN = data.token;
+    ME = data;
+    localStorage.setItem('scc_token', TOKEN);
+    showApp();
+  } catch(e) {
+    errEl.textContent = e.message;
+    errEl.className = 'auth-error show';
+  }
+}
+
+async function doRegister() {
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const password2 = document.getElementById('regPassword2').value;
+  const invite_code = document.getElementById('regInvite').value;
+  const errEl = document.getElementById('authError');
+  if (password !== password2) {
+    errEl.textContent = 'Les mots de passe ne correspondent pas';
+    errEl.className = 'auth-error show';
+    return;
+  }
+  try {
+    const data = await fetch(BASE + '/api/auth/register', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, password, invite_code })
+    }).then(r => r.ok ? r.json() : r.json().then(e => { throw new Error(e.detail); }));
+    TOKEN = data.token;
+    ME = data;
+    localStorage.setItem('scc_token', TOKEN);
+    showApp();
+  } catch(e) {
+    errEl.textContent = e.message;
+    errEl.className = 'auth-error show';
+  }
+}
+
+function doLogout() {
+  fetch(BASE + '/api/auth/logout', { method:'POST', headers:{ Authorization:'Bearer '+TOKEN } }).catch(()=>{});
+  TOKEN = '';
+  ME = null;
+  localStorage.removeItem('scc_token');
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('authOverlay').style.display = 'flex';
+}
+
+async function checkAuth() {
+  const status = await fetch(BASE + '/api/status').then(r => r.json()).catch(() => null);
+  if (!status?.ok) {
+    document.getElementById('authError').textContent = 'Serveur injoignable — lancez le backend localement.';
+    document.getElementById('authError').className = 'auth-error show';
+    return;
+  }
+  if (!TOKEN) return;
+  try {
+    ME = await api('/api/auth/me');
+    if (ME) showApp();
+  } catch { TOKEN = ''; localStorage.removeItem('scc_token'); }
+}
+
+function showApp() {
+  document.getElementById('authOverlay').style.display = 'none';
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('sbEmail').textContent = ME?.email || '';
+  document.getElementById('sbAvatar').textContent = (ME?.email || 'U')[0].toUpperCase();
+  loadPage('dashboard');
+  startCanvas();
+  checkOnboarding();
+}
+
+const PAGE_TITLES = {
+  dashboard:'Dashboard', brand:'The Brand', scripts:'Scripts',
+  contenus:'Contenus', planning:'Planning', analytics:'Analytics', settings:'Réglages'
+};
+
+function navigate(page) {
+  CURRENT_PAGE = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page' + page.charAt(0).toUpperCase() + page.slice(1)).classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  document.querySelector(`.sb-item[data-page="${page}"]`)?.classList.add('active');
+  document.getElementById('topbarTitle').textContent = PAGE_TITLES[page] || page;
+  loadPage(page);
+}
+
+function loadPage(page) {
+  switch(page) {
+    case 'dashboard': loadDashboard(); break;
+    case 'brand': loadBrand(); break;
+    case 'scripts': loadScripts(); break;
+    case 'contenus': loadContenus(); break;
+    case 'planning': loadPlanning(); break;
+    case 'analytics': loadAnalytics(); break;
+    case 'settings': loadSettings(); break;
+  }
+}
+
+function toast(msg, type = 'ok') {
+  const tc = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  const icon = type === 'ok' ? '✓' : type === 'err' ? '✕' : '⚠';
+  el.className = `toast toast-${type}`;
+  el.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  tc.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+let _agentRunId = null;
+function openAgentModal(agentKey, runId) {
+  const ag = AGENT_DEFS[agentKey];
+  document.getElementById('agentModalTitle').textContent = ag.label + ' — ' + ag.title;
+  document.getElementById('agentModalRole').textContent = ag.role;
+  document.getElementById('agentModalBody').innerHTML = '<div class="spinner"></div>';
+  openModal('agentModal');
+  _agentRunId = runId;
+  if (runId) {
+    api('/api/agent-runs/' + runId).then(r => {
+      if (!r) return;
+      document.getElementById('agentModalBody').innerHTML = renderMarkdown(r.output_text || '');
+      document.getElementById('agentModalMeta').textContent =
+        `${r.tokens_in + r.tokens_out} tokens · ${r.cost_eur?.toFixed(4)}€ · ${r.duration_ms}ms`;
+    });
+  } else {
+    document.getElementById('agentModalBody').innerHTML = renderMarkdown('*Aucune réponse disponible — lancez un pipeline d\'abord.*');
+  }
+}
+
+function renderMarkdown(text) {
+  if (!text) return '';
+  return `<div class="md-viewer">${text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>(\n|$))+/g, s => `<ul>${s}</ul>`)
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/^(?!<[hup])/gm, '')
+    .replace(/^(.+)$/gm, m => m.startsWith('<') ? m : `<p>${m}</p>`)
+  }</div>`;
+}
+
+async function checkOnboarding() {
+  try {
+    const brand = await api('/api/brand');
+    const steps = document.querySelectorAll('.ob-step-check');
+    const apiKey = await api('/api/settings').then(s => s?.anthropic_api_key || '');
+    if (apiKey) steps[0]?.classList.add('ob-done');
+    if (brand?.name) { steps[1]?.classList.add('ob-done'); steps[2]?.classList.add('ob-done'); }
+  } catch {}
+}
+
+function openOnboarding() { openModal('onboardingModal'); }
+
+async function loadDashboard() {
+  try {
+    const stats = await api('/api/analytics');
+    if (!stats) return;
+    document.getElementById('kpiScripts').textContent = stats.scripts?.total ?? 0;
+    document.getElementById('kpiContenus').textContent = stats.contents?.total ?? 0;
+    document.getElementById('kpiPubs').textContent = stats.publications?.total ?? 0;
+    document.getElementById('kpiCost').textContent = (stats.cost_eur ?? 0).toFixed(3) + ' €';
+  } catch {}
+  await loadFeed();
+}
+
+async function loadFeed() {
+  const feed = document.getElementById('liveFeed');
+  if (!feed) return;
+  try {
+    const runs = await api('/api/agent-runs?limit=20');
+    if (!runs?.length) {
+      feed.innerHTML = '<div class="empty-state"><div class="empty-icon">🤖</div><h3>Aucun agent actif</h3><p>Lancez un pipeline pour commencer</p></div>';
+      return;
+    }
+    feed.innerHTML = runs.map(r => {
+      const ag = AGENT_DEFS[r.agent] || {};
+      const dotCls = r.state==='done'?'feed-dot-ok':r.state==='running'?'feed-dot-run':'feed-dot-err';
+      const preview = (r.output_text||'').slice(0,120).replace(/\n/g,' ');
+      return `<div class="feed-item" onclick="openAgentModal('${r.agent}',${r.id})" style="cursor:pointer">
+        <div class="feed-dot ${dotCls}"></div>
+        <div style="flex:1;min-width:0">
+          <div class="feed-agent" style="color:${ag.color||'#69ADFF'}">${r.agent.toUpperCase()}</div>
+          <div class="feed-text">${preview || '(vide)'}</div>
+          <div style="font-size:10px;color:#9CA3AF;margin-top:2px">${r.cost_eur?.toFixed(4)||0}€ · ${r.tokens_in+r.tokens_out} tok</div>
+        </div>
+        <div class="feed-time">${formatTime(r.created_at)}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    feed.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><h3>Erreur de chargement</h3></div>';
+  }
+}
+
+async function runPipeline() {
+  const idea = document.getElementById('pipelineIdea')?.value?.trim();
+  if (!idea) { toast('Décrivez votre idée de contenu', 'warn'); return; }
+  const platforms = [...document.querySelectorAll('.platform-check:checked')].map(c => c.value);
+  if (!platforms.length) { toast('Sélectionnez au moins une plateforme', 'warn'); return; }
+  const content_type = document.getElementById('contentTypeSelect')?.value || 'video';
+
+  PIPELINE_ACTIVE = true;
+  resetAgentStates();
+  document.getElementById('launchBtn').disabled = true;
+  document.getElementById('launchBtn').innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px"></span> En cours…';
+
+  // Show pipeline modal progress
+  document.getElementById('pipelineModalTitle').textContent = 'Pipeline en cours…';
+  document.getElementById('pipelineIdea2').textContent = idea;
+  openModal('pipelineModal');
+
+  try {
+    // Animate agents sequentially
+    const seq = ['manager','marketing','scripter','design','control','monteur','planner'];
+    for (let i = 0; i < seq.length; i++) {
+      setAgentState(seq[i], 'active');
+      if (i > 0) setAgentState(seq[i-1], 'active');
+    }
+
+    const result = await api('/api/pipeline/run', {
+      method:'POST',
+      body: JSON.stringify({ idea, content_type, platforms })
+    });
+
+    if (!result) throw new Error('Pas de réponse');
+
+    // Update states from results
+    for (const run of result.runs || []) {
+      setAgentState(run.agent, run.state === 'done' ? 'done' : run.state === 'error' ? 'error' : 'done');
+      addPipelineRunItem(run);
+    }
+
+    toast(`Pipeline terminé — Script #${result.script_id} créé`, 'ok');
+    document.getElementById('pipelineModalTitle').textContent = 'Pipeline terminé ✓';
+    loadDashboard();
+    loadFeed();
+
+  } catch(e) {
+    toast('Erreur pipeline: ' + e.message, 'err');
+    for (const k of seq) if (AGENT_STATES[k]==='active') setAgentState(k, 'error');
+  } finally {
+    PIPELINE_ACTIVE = false;
+    document.getElementById('launchBtn').disabled = false;
+    document.getElementById('launchBtn').innerHTML = '▶ Lancer le pipeline';
+  }
+}
+
+function addPipelineRunItem(run) {
+  const list = document.getElementById('pipelineRunList');
+  if (!list) return;
+  const ag = AGENT_DEFS[run.agent] || {};
+  const icon = run.state==='done'?'✓':run.state==='error'?'✕':'…';
+  const color = run.state==='done'?'#22B86A':run.state==='error'?'#FF4D6D':'#F5B94E';
+  const el = document.createElement('div');
+  el.style = 'display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #ECECF3;cursor:pointer';
+  el.onclick = () => { closeModal('pipelineModal'); openAgentModal(run.agent, run.id); };
+  el.innerHTML = `
+    <span style="width:20px;height:20px;border-radius:50%;background:${ag.color||'#69ADFF'};display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:700">${icon}</span>
+    <span style="font-size:13px;font-weight:600;color:#303150">${run.agent.toUpperCase()}</span>
+    <span style="font-size:12px;color:#606070;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(run.output_text||'').slice(0,60)}…</span>
+    <span style="font-size:11px;color:#9CA3AF">${run.cost_eur?.toFixed(4)||0}€</span>
+  `;
+  list.appendChild(el);
+}
+
+async function rerunStep(pipelineId, step) {
+  if (!pipelineId || !step) { toast('Sélectionnez un pipeline actif', 'warn'); return; }
+  setAgentState(step, 'active');
+  try {
+    const run = await api(`/api/pipeline/rerun/${pipelineId}/${step}`, { method:'POST' });
+    if (!run) return;
+    setAgentState(step, run.state === 'done' ? 'done' : 'error');
+    toast(`${step.toUpperCase()} relancé`, 'ok');
+    loadFeed();
+  } catch(e) {
+    setAgentState(step, 'error');
+    toast('Erreur: ' + e.message, 'err');
+  }
+}
+
+let _brandDos = [], _brandDonts = [], _brandColors = [];
+
+async function loadBrand() {
+  try {
+    const b = await api('/api/brand');
+    if (!b) return;
+    document.getElementById('brandName').value = b.name || '';
+    document.getElementById('brandDesc').value = b.description || '';
+    document.getElementById('brandTarget').value = b.target || '';
+    document.getElementById('brandTone').value = b.tone || '';
+    document.getElementById('brandLang').value = b.language || 'fr';
+    document.getElementById('brandLogo').value = b.logo_url || '';
+    _brandDos = b.do_list || [];
+    _brandDonts = b.dont_list || [];
+    _brandColors = b.colors || [];
+    renderDos();
+    renderDonts();
+    renderColors();
+    if (b.strategy) {
+      const s = typeof b.strategy === 'string' ? JSON.parse(b.strategy) : b.strategy;
+      document.getElementById('brandDailyPosts').value = s.daily_posts || '';
+      document.getElementById('brandPubStart').value = s.pub_start || '08:00';
+      document.getElementById('brandPubEnd').value = s.pub_end || '20:00';
+    }
+  } catch {}
+}
+
+function renderDos() {
+  const el = document.getElementById('brandDosList');
+  if (!el) return;
+  el.innerHTML = _brandDos.map((d,i) => `<span class="tag">${d}<span class="tag-remove" onclick="_brandDos.splice(${i},1);renderDos()">×</span></span>`).join('');
+}
+function renderDonts() {
+  const el = document.getElementById('brandDontsList');
+  if (!el) return;
+  el.innerHTML = _brandDonts.map((d,i) => `<span class="tag" style="background:#FFE0EF;border-color:#FFC6D8">${d}<span class="tag-remove" onclick="_brandDonts.splice(${i},1);renderDonts()">×</span></span>`).join('');
+}
+function renderColors() {
+  const el = document.getElementById('brandColorsList');
+  if (!el) return;
+  el.innerHTML = _brandColors.map((c,i) => `<div class="color-swatch" style="background:${c}" title="${c}" onclick="if(confirm('Retirer ${c} ?')){_brandColors.splice(${i},1);renderColors()}"></div>`).join('');
+}
+function addDo() {
+  const v = document.getElementById('brandDoInput').value.trim();
+  if (!v) return;
+  _brandDos.push(v);
+  document.getElementById('brandDoInput').value = '';
+  renderDos();
+}
+function addDont() {
+  const v = document.getElementById('brandDontInput').value.trim();
+  if (!v) return;
+  _brandDonts.push(v);
+  document.getElementById('brandDontInput').value = '';
+  renderDonts();
+}
+function addColor() {
+  const v = document.getElementById('brandColorInput').value;
+  if (!v || _brandColors.includes(v)) return;
+  _brandColors.push(v);
+  renderColors();
+}
+
+async function saveBrand() {
+  const strategy = {
+    daily_posts: document.getElementById('brandDailyPosts').value,
+    pub_start: document.getElementById('brandPubStart').value,
+    pub_end: document.getElementById('brandPubEnd').value,
+  };
+  try {
+    await api('/api/brand', { method:'PUT', body: JSON.stringify({
+      name: document.getElementById('brandName').value,
+      description: document.getElementById('brandDesc').value,
+      target: document.getElementById('brandTarget').value,
+      tone: document.getElementById('brandTone').value,
+      language: document.getElementById('brandLang').value,
+      logo_url: document.getElementById('brandLogo').value,
+      do_list: _brandDos,
+      dont_list: _brandDonts,
+      colors: _brandColors,
+      strategy
+    })});
+    toast('Marque sauvegardée', 'ok');
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+let _editingScript = null;
+
+async function loadScripts() {
+  const state = document.getElementById('scriptStateFilter')?.value || '';
+  const type  = document.getElementById('scriptTypeFilter')?.value || '';
+  const q     = document.getElementById('scriptSearch')?.value || '';
+  const params = new URLSearchParams();
+  if (state) params.set('state', state);
+  if (type)  params.set('content_type', type);
+  if (q)     params.set('q', q);
+  const scripts = await api('/api/scripts?' + params);
+  const el = document.getElementById('scriptsList');
+  if (!el) return;
+  if (!scripts?.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><h3>Aucun script</h3><p>Lancez un pipeline pour générer des scripts</p></div>';
+    return;
+  }
+  el.innerHTML = scripts.map(s => {
+    const stateInfo = { draft:{label:'Brouillon',cls:'badge-neutral'}, pending:{label:'En attente',cls:'badge-warn'}, approved:{label:'Approuvé',cls:'badge-ok'}, rejected:{label:'Rejeté',cls:'badge-err'} };
+    const si = stateInfo[s.state] || stateInfo.draft;
+    const platforms = (s.platforms || []).join(', ') || '—';
+    return `<div class="script-item">
+      <div class="script-header">
+        <div class="script-title">${esc(s.title)}</div>
+        <span class="badge ${si.cls}">${si.label}</span>
+        <span class="badge badge-neutral">${s.content_type}</span>
+      </div>
+      <div class="script-meta">📅 ${formatDate(s.created_at)} · 📱 ${platforms}</div>
+      <div class="script-content">${esc(s.content)}</div>
+      <div class="script-actions">
+        ${s.state !== 'approved' ? `<button class="btn btn-success btn-sm" onclick="approveScript(${s.id})">✓ Approuver</button>` : ''}
+        ${s.state !== 'rejected' ? `<button class="btn btn-danger btn-sm" onclick="rejectScript(${s.id})">✕ Rejeter</button>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="openScriptEdit(${s.id})">✏ Modifier</button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteScript(${s.id})">🗑</button>
+        ${s.pipeline_id ? `<button class="btn btn-ghost btn-sm" onclick="rerunStep('${s.pipeline_id}','scripter')">↺ Scripter</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function approveScript(id) {
+  try {
+    await api('/api/scripts/' + id + '/approve', { method:'POST' });
+    toast('Script approuvé — génération du contenu…', 'ok');
+    loadScripts();
+    // Auto-generate content
+    generateContentForScript(id);
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function rejectScript(id) {
+  try {
+    await api('/api/scripts/' + id + '/reject', { method:'POST' });
+    toast('Script rejeté', 'warn');
+    loadScripts();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function deleteScript(id) {
+  if (!confirm('Supprimer ce script ?')) return;
+  try {
+    await api('/api/scripts/' + id, { method:'DELETE' });
+    toast('Script supprimé', 'ok');
+    loadScripts();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function generateContentForScript(scriptId) {
+  const script = await api('/api/scripts/' + scriptId);
+  if (!script) return;
+  const platforms = script.platforms || [];
+  const formatMap = { instagram:{type:'carousel',format:'1080x1350'}, instagram_reels:{type:'video',format:'1080x1920'}, facebook:{type:'carousel',format:'1080x1350'}, tiktok:{type:'video',format:'1080x1920'}, youtube:{type:'video',format:'1920x1080'}, youtube_shorts:{type:'video',format:'1080x1920'}, pinterest:{type:'pinterest',format:'1000x1500'} };
+  for (const plat of platforms) {
+    const fmt = formatMap[plat] || {type:'video',format:'1080x1920'};
+    await api('/api/contents', { method:'POST', body: JSON.stringify({ script_id:scriptId, type:fmt.type, platform:plat, format:fmt.format, state:'generating', caption: script.title }) });
+  }
+  toast('Contenus créés pour ' + platforms.length + ' plateforme(s)', 'ok');
+}
+
+function openScriptEdit(id) {
+  api('/api/scripts/' + id).then(s => {
+    if (!s) return;
+    _editingScript = s;
+    document.getElementById('scriptModalTitle').textContent = 'Modifier le script';
+    document.getElementById('scriptEditTitle').value = s.title;
+    document.getElementById('scriptEditContent').value = s.content;
+    document.getElementById('scriptEditType').value = s.content_type;
+    openModal('scriptModal');
+  });
+}
+
+async function saveAndApproveScript() {
+  if (!_editingScript) return;
+  const title = document.getElementById('scriptEditTitle').value.trim();
+  const content = document.getElementById('scriptEditContent').value.trim();
+  const content_type = document.getElementById('scriptEditType').value;
+  try {
+    await api('/api/scripts/' + _editingScript.id, { method:'PUT', body: JSON.stringify({ title, content, content_type }) });
+    await api('/api/scripts/' + _editingScript.id + '/approve', { method:'POST' });
+    closeModal('scriptModal');
+    toast('Script modifié et approuvé', 'ok');
+    loadScripts();
+    generateContentForScript(_editingScript.id);
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function uploadScriptImage() {
+  const file = document.getElementById('scriptImageUpload').files[0];
+  if (!file || !_editingScript) return;
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('name', file.name);
+  const res = await fetch(BASE + '/api/product-images', {
+    method:'POST', headers:{ Authorization:'Bearer '+TOKEN }, body: fd
+  }).then(r => r.json()).catch(() => null);
+  if (res?.url) {
+    await api('/api/scripts/' + _editingScript.id, { method:'PUT', body: JSON.stringify({ ref_image_url: res.url }) });
+    document.getElementById('scriptImgPreview').innerHTML = `<img src="${BASE+res.url}" style="max-width:100%;border-radius:8px;margin-top:8px">`;
+    toast('Image associée au script', 'ok');
+  }
+}
+
+async function loadContenus(tab = 'pending') {
+  const state = tab === 'pending' ? 'generating,ready' : 'published';
+  const contents = await api('/api/contents');
+  if (!contents) return;
+  const filtered = contents.filter(c => tab === 'pending' ? c.state !== 'published' : c.state === 'published');
+  const el = document.getElementById('contenusGrid');
+  if (!el) return;
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🎬</div><h3>Aucun contenu</h3><p>Approuvez des scripts pour générer des contenus</p></div>';
+    return;
+  }
+  const platformEmoji = { tiktok:'🎵', instagram:'📷', instagram_reels:'🎬', facebook:'👥', youtube:'▶', youtube_shorts:'📱', pinterest:'📌' };
+  el.innerHTML = filtered.map(c => {
+    const ratio = c.format === '1920x1080' ? 'landscape' : c.format === '1080x1350' ? 'square' : '';
+    const icon = c.type === 'video' ? '🎬' : c.type === 'carousel' ? '🖼️' : '📌';
+    return `<div class="content-card">
+      <div class="content-thumb ${ratio}">${icon}</div>
+      <div class="content-info">
+        <div class="content-platform">${platformEmoji[c.platform]||'📱'} ${c.platform.replace('_',' ')}</div>
+        <div class="content-name">${esc(c.caption || c.type)}</div>
+        <div class="content-format">${c.format||'—'} · <span class="badge ${c.state==='ready'?'badge-ok':'badge-neutral'}" style="font-size:9px">${c.state}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function switchContenusTab(tab) {
+  document.querySelectorAll('.contenus-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.contenus-tab[data-tab="${tab}"]`)?.classList.add('active');
+  loadContenus(tab);
+}
+
+async function loadPlanning() {
+  const pubs = await api('/api/publications');
+  const el = document.getElementById('pubList');
+  if (!el) return;
+  if (!pubs?.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><h3>Aucune publication planifiée</h3><p>Planifiez vos contenus depuis la page Contenus</p></div>';
+    return;
+  }
+  const platformEmoji = { tiktok:'🎵', instagram:'📷', instagram_reels:'🎬', facebook:'👥', youtube:'▶', youtube_shorts:'📱', pinterest:'📌' };
+  const statusInfo = { scheduled:{label:'Planifié',cls:'badge-info'}, published:{label:'Publié',cls:'badge-ok'}, paused:{label:'Pause',cls:'badge-warn'}, failed:{label:'Échec',cls:'badge-err'} };
+  el.innerHTML = pubs.map(p => {
+    const si = statusInfo[p.status] || statusInfo.scheduled;
+    return `<div class="pub-card">
+      <div class="pub-platform-icon" style="background:#E8F3FF;font-size:22px">${platformEmoji[p.platform]||'📱'}</div>
+      <div class="pub-info">
+        <div class="pub-title">${p.platform.replace('_',' ')} · Contenu #${p.content_id}</div>
+        <div class="pub-meta">${p.scheduled_at ? '📅 ' + formatDateTime(p.scheduled_at) : 'Non planifié'}</div>
+      </div>
+      <div class="pub-status">
+        <span class="badge ${si.cls}">${si.label}</span>
+        ${p.status !== 'paused' && p.status !== 'published'
+          ? `<button class="btn btn-ghost btn-sm" onclick="pausePub(${p.id})">⏸ Pause</button>`
+          : p.status === 'paused'
+          ? `<button class="btn btn-ghost btn-sm" onclick="resumePub(${p.id})">▶ Reprendre</button>`
+          : ''}
+        <button class="btn btn-danger btn-sm" onclick="deletePub(${p.id})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function pausePub(id) {
+  try { await api('/api/publications/'+id+'/pause',{method:'POST'}); toast('Publication mise en pause','warn'); loadPlanning(); }
+  catch(e) { toast(e.message,'err'); }
+}
+async function resumePub(id) {
+  try { await api('/api/publications/'+id+'/resume',{method:'POST'}); toast('Publication reprise','ok'); loadPlanning(); }
+  catch(e) { toast(e.message,'err'); }
+}
+async function deletePub(id) {
+  if (!confirm('Retirer cette publication ?')) return;
+  try { await api('/api/publications/'+id,{method:'DELETE'}); toast('Publication retirée','ok'); loadPlanning(); }
+  catch(e) { toast(e.message,'err'); }
+}
+
+async function loadAnalytics() {
+  try {
+    const [stats, costs] = await Promise.all([api('/api/analytics'), api('/api/analytics/costs')]);
+    if (!stats || !costs) return;
+
+    // KPIs
+    const el = doc => document.getElementById(doc);
+    if (el('anScripts')) el('anScripts').textContent = stats.scripts?.total ?? 0;
+    if (el('anContenus')) el('anContenus').textContent = stats.contents?.total ?? 0;
+    if (el('anTokens')) el('anTokens').textContent = (stats.tokens || 0).toLocaleString('fr');
+    if (el('anCost')) el('anCost').textContent = (stats.cost_eur || 0).toFixed(4) + ' €';
+
+    // Cost tracker by agent
+    const costEl = document.getElementById('costTracker');
+    if (costEl && costs.by_agent) {
+      const agentColors = { manager:'#69ADFF', marketing:'#F18AB5', scripter:'#9F7FE0', design:'#00BACC', control:'#FFB830', monteur:'#FF8A65', planner:'#A8C8FF' };
+      const maxCost = Math.max(...Object.values(costs.by_agent).map(v => v.cost_eur), 0.001);
+      costEl.innerHTML = Object.entries(costs.by_agent).map(([agent, v]) => `
+        <div class="cost-item">
+          <span class="cost-agent">${agent.toUpperCase()}</span>
+          <div class="cost-bar-wrap"><div class="cost-bar-fill" style="width:${(v.cost_eur/maxCost*100).toFixed(1)}%;background:${agentColors[agent]||'#69ADFF'}"></div></div>
+          <span class="cost-value">${v.cost_eur.toFixed(4)} €</span>
+        </div>
+      `).join('') || '<div class="empty-state"><p>Aucune donnée de coût</p></div>';
+    }
+
+    // Recent runs for viewer
+    const runs = await api('/api/agent-runs?limit=30');
+    const runEl = document.getElementById('analyticsRuns');
+    if (runEl && runs?.length) {
+      const agentColors = { manager:'#69ADFF', marketing:'#F18AB5', scripter:'#9F7FE0', design:'#00BACC', control:'#FFB830', monteur:'#FF8A65', planner:'#A8C8FF' };
+      runEl.innerHTML = runs.map(r => `
+        <div class="feed-item" onclick="openAgentModal('${r.agent}',${r.id})" style="cursor:pointer">
+          <div class="feed-dot ${r.state==='done'?'feed-dot-ok':r.state==='error'?'feed-dot-err':'feed-dot-run'}"></div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:11px;font-weight:700;color:${agentColors[r.agent]||'#69ADFF'}">${r.agent.toUpperCase()}</span>
+              <span class="badge badge-neutral" style="font-size:9px">${r.state}</span>
+            </div>
+            <div class="feed-text">${esc((r.output_text||'').slice(0,100))}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div class="feed-time">${formatTime(r.created_at)}</div>
+            <div style="font-size:10px;color:#9CA3AF">${r.cost_eur?.toFixed(4)||0}€</div>
+          </div>
+        </div>
+      `).join('');
+    }
+  } catch(e) { console.error('Analytics error', e); }
+}
+
+async function loadSettings() {
+  try {
+    const s = await api('/api/settings');
+    if (!s) return;
+    const fields = ['anthropic_api_key','heygen_api_key','woopsocial_api_key','ig_account','fb_account','tiktok_account','yt_account','pinterest_account','min_delay_minutes','pub_window_start','pub_window_end','daily_posts_count'];
+    for (const f of fields) {
+      const el = document.getElementById('set_' + f);
+      if (el && s[f]) el.value = s[f];
+    }
+  } catch {}
+}
+
+async function saveSettings() {
+  const fields = ['anthropic_api_key','heygen_api_key','woopsocial_api_key','ig_account','fb_account','tiktok_account','yt_account','pinterest_account','min_delay_minutes','pub_window_start','pub_window_end','daily_posts_count'];
+  const body = {};
+  for (const f of fields) {
+    const el = document.getElementById('set_' + f);
+    if (el && el.value.trim()) body[f] = el.value.trim();
+  }
+  try {
+    await api('/api/settings', { method:'PUT', body: JSON.stringify(body) });
+    toast('Réglages sauvegardés', 'ok');
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+let _searchTimer = null;
+async function onSearch(q) {
+  clearTimeout(_searchTimer);
+  const el = document.getElementById('searchResults');
+  if (!q || q.length < 2) { el.className = 'search-results'; return; }
+  _searchTimer = setTimeout(async () => {
+    const res = await api('/api/search?q=' + encodeURIComponent(q));
+    if (!res?.results?.length) { el.className = 'search-results'; return; }
+    el.innerHTML = res.results.map(r =>
+      `<div class="search-result-item" onclick="navigate('${r.type==='script'?'scripts':'contenus'}')">${r.type==='script'?'📝':'🎬'} ${esc(r.title)}<span class="badge badge-neutral" style="float:right;font-size:9px">${r.state}</span></div>`
+    ).join('');
+    el.className = 'search-results open';
+  }, 250);
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.topbar-search')) document.getElementById('searchResults').className = 'search-results';
+});
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function formatTime(iso) { if (!iso) return ''; try { return new Date(iso).toLocaleTimeString('fr', {hour:'2-digit',minute:'2-digit'}); } catch { return ''; } }
+function formatDate(iso) { if (!iso) return ''; try { return new Date(iso).toLocaleDateString('fr'); } catch { return ''; } }
+function formatDateTime(iso) { if (!iso) return ''; try { return new Date(iso).toLocaleString('fr',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); } catch { return ''; } }
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  const map = { 'd':'dashboard', 'b':'brand', 's':'scripts', 'c':'contenus', 'p':'planning', 'a':'analytics', 'g':'settings' };
+  if (map[e.key]) navigate(map[e.key]);
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+  if (e.key === 'n' || e.key === 'N') { navigate('dashboard'); setTimeout(() => document.getElementById('pipelineIdea')?.focus(), 100); }
+});
+
+// Init
+document.addEventListener('DOMContentLoaded', () => checkAuth());
+</script></body></html>
